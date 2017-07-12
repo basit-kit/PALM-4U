@@ -1,0 +1,23 @@
+# excludeing redundent files
+.*.swp
+*~
+*.o
+*.log
+
+# excluding large directories and platform specific files
+
+current_version/.mrun.config
+current_version/.mrun.config-table
+current_version/JOBS/
+current_version/MAKE_DEPOSITORY_parallel/
+current_version/Makefile
+current_version/SOURCES_FOR_RUN_chem/
+current_version/build/
+current_version/jobsub.sh
+current_version/lctable.mrun.config
+current_version/o0.mrun.config
+current_version/o3.mrun.config
+current_version/tmp/
+
+
+
