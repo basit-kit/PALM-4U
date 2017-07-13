@@ -7,7 +7,7 @@ This repository is created by Basit Khan of Karlsruhe Institute of Technology, G
 Contributors to the Chemistry Module:
 
  - Renate Forkel
- - Maththias Mauder
+ - Matthias Mauder
  - Basit Khan
  - Sabine Banzhaf
  - Emmanuele Russo
