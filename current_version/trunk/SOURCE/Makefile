@@ -325,7 +325,8 @@ SOURCES = advec_s_bc.f90 advec_s_pw.f90 advec_s_up.f90 advec_ws.f90 \
 	init_advec.f90 init_cloud_physics.f90 init_coupling.f90 init_dvrp.f90 \
 	init_grid.f90 init_masks.f90 init_ocean.f90 \
 	init_pegrid.f90 init_pt_anomaly.f90 init_rankine.f90 init_slope.f90 \
-	interaction_droplets_ptq.f90 kchem_driver.f90 kchem_kpp.f90 land_surface_model_mod.f90 \
+	interaction_droplets_ptq.f90  land_surface_model_mod.f90 \
+	kchem_driver.f90 kchem_kpp.f90 kchem_photolysis.f90 \
 	local_stop.f90 local_system.f90 local_tremain.f90 \
 	local_tremain_ini.f90 lpm.f90 lpm_advec.f90 lpm_boundary_conds.f90 \
 	lpm_calc_liquid_water_content.f90 lpm_collision_kernels.f90 \
@@ -492,8 +493,9 @@ init_pt_anomaly.o: modules.o mod_kinds.o
 init_rankine.o: modules.o mod_kinds.o
 init_slope.o: modules.o mod_kinds.o
 interaction_droplets_ptq.o: modules.o mod_kinds.o
-kchem_driver.o: kchem_kpp.o  modules.o mod_kinds.o
+kchem_driver.o: kchem_kpp.o modules.o mod_kinds.o
 kchem_kpp.o: mod_kinds.o
+kchem_photolysis.o: mod_kinds.o kchem_kpp.o kchem_driver.o radiation_model_mod.o
 land_surface_model_mod.o: modules.o mod_kinds.o radiation_model_mod.o
 local_stop.o: modules.o mod_kinds.o pmc_interface_mod.o
 local_tremain.o: modules.o cpulog_mod.o mod_kinds.o
@@ -590,7 +592,7 @@ temperton_fft_mod.o: modules.o mod_kinds.o
 time_integration.o: modules.o advec_ws.o buoyancy.o calc_mean_profile.o \
 	cpulog_mod.o data_output_flight.o interaction_droplets_ptq.o land_surface_model_mod.o \
 	ls_forcing_mod.o mod_kinds.o nudging_mod.o pmc_interface_mod.o production_e.o \
-	prognostic_equations.o progress_bar_mod.o radiation_model_mod.o \
+	prognostic_equations.o progress_bar_mod.o radiation_model_mod.o kchem_photolysis.o \
 	spectra_mod.o user_actions.o surface_layer_fluxes_mod.o microphysics_mod.o \
 	urban_surface_mod.o virtual_flight_mod.o wind_turbine_model_mod.o
 time_to_string.o: mod_kinds.o

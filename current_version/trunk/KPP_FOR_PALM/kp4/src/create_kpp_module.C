@@ -442,13 +442,15 @@ void create_kpp_module::create_kpp_integrate() {
 
    kppi.set_name("kpp_integrate");
 
-   kppi.add_line("SUBROUTINE kpp_integrate (time_step_len, Conc, ierrf, xNacc, xNrej, istatus, l_debug, PE )  ");
+   kppi.add_line("SUBROUTINE kpp_integrate (time_step_len, Conc, Tempk, photo, ierrf, xNacc, xNrej, istatus, l_debug, PE )  ");
    kppi.add_line("                                                                    ");
    kppi.add_line("  IMPLICIT NONE                                                     ");
    kppi.add_line("                                                                    ");
 
    kppi.add_line("  REAL(dp), INTENT(IN)                   :: time_step_len           ");
    kppi.add_line("  REAL(dp), INTENT(INOUT),dimension(:,:) :: Conc                    ");
+   kppi.add_line("  REAL(dp), INTENT(INOUT),dimension(:,:) :: photo                   ");
+   kppi.add_line("  REAL(dp), INTENT(IN),dimension(:)      :: Tempk                   ");
    kppi.add_line("  INTEGER,  INTENT(OUT), OPTIONAL        :: ierrf(:)                ");
    kppi.add_line("  INTEGER,  INTENT(OUT), OPTIONAL        :: xNacc(:)                ");
    kppi.add_line("  INTEGER,  INTENT(OUT), OPTIONAL        :: xNrej(:)                ");
@@ -464,6 +466,8 @@ void create_kpp_module::create_kpp_integrate() {
    kppi.add_line("                                                                    ");
    kppi.add_line("  if (present (istatus) )  istatus = 0                              ");
    kppi.add_line("                                                                    ");
+// kppi.add_line("  VL_glo = size(Tempk,1)                                            ");
+// kppi.add_line("                                                                    ");
 
    kppi.add_line("  DO k=1,VL_glo,VL_DIM                                              ");
    kppi.add_line("    is = k                                                          ");
@@ -476,7 +480,18 @@ void create_kpp_module::create_kpp_integrate() {
    } else {
      kppi.add_line("    C(:) = Conc(is,:)                                             ");
    }
-
+   kppi.add_line("                                                                    ");
+   if(kpp_switches.is_vector()) {
+     kppi.add_line("    TEMP(1:VL) = Tempk(is:ie)                                     ");
+   } else {
+     kppi.add_line("    TEMP = Tempk(is)                                             ");
+   }
+   kppi.add_line("                                                                    ");
+   if(kpp_switches.is_vector()) {
+     kppi.add_line("    phot(1:VL,:) = photo(is:ie,:)                                     ");
+   } else {
+     kppi.add_line("    phot(:) = photo(is,:)                                             ");
+   }
    kppi.add_line("                                                                    ");
    kppi.add_line("    CALL update_rconst                                              ");
    kppi.add_line("                                                                    ");

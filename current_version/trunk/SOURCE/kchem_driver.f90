@@ -67,9 +67,9 @@ MODULE kchem_driver
    USE indices,            ONLY: nzb,nzt,nysg,nyng,nxlg,nxrg,nzb_s_inner,nys,nyn
    USE pegrid,             ONLY: myid, threads_per_task
    USE control_parameters, ONLY: dt_3d, ws_scheme_sca, initializing_actions  !ws_sch... added by bK
-   USE arrays_3d,          ONLY: pt
+   USE arrays_3d,          ONLY: pt, hyp    !RFo added hyp   
    USE kchem_kpp,          ONLY: NSPEC, SPC_NAMES, NKPPCTRL, NMAXFIXSTEPS, t_steps, FILL_TEMP, kpp_integrate,     &
-                                 NVAR, ATOL, RTOL
+                                 NVAR, ATOL, RTOL, NPHOT, phot_names
    USE cpulog,             ONLY: cpu_log, log_point_s
 
    IMPLICIT   NONE
@@ -89,16 +89,29 @@ MODULE kchem_driver
       REAL(kind=wp),ALLOCATABLE,DIMENSION(:,:,:)         :: flux_l, diss_l
    END TYPE species_def
 
+   TYPE   photols_def                                                         !RFo
+      CHARACTER(LEN=8)                                   :: name
+      CHARACTER(LEN=16)                                  :: unit
+      REAL(kind=wp),POINTER,DIMENSION(:,:,:)             :: freq
+   END TYPE photols_def
+
+
+
    PUBLIC  species_def
+   PUBLIC  photols_def
 
    logical, PUBLIC                                               :: use_kpp_chemistry = .FALSE.
 
    TYPE(species_def),ALLOCATABLE,DIMENSION(:),TARGET, PUBLIC     :: chem_species
+   TYPE(photols_def),ALLOCATABLE,DIMENSION(:),TARGET, PUBLIC     :: phot_frequen    !RFo
 
    REAL(kind=wp),ALLOCATABLE,DIMENSION(:,:,:,:),TARGET   :: spec_conc_1,spec_conc_2,spec_conc_3, spec_conc_av       !bK added spec_conc_av
+   REAL(kind=wp),ALLOCATABLE,DIMENSION(:,:,:,:),TARGET   :: freq_1
 
    INTEGER,DIMENSION(NKPPCTRL)                           :: icntrl                            ! Fine tuning kpp
    REAL(kind=wp),DIMENSION(NKPPCTRL)                     :: rcntrl                            ! Fine tuning kpp
+
+   LOGICAL, PUBLIC ::  call_kpp_at_all_substeps                ! ### RFo
 
 !------------------ For mean concentration over specified dt                         !bK add this block
    TYPE   species_av_def
@@ -240,7 +253,7 @@ MODULE kchem_driver
 !            message_string = 'unknown boundary condition: bc_rs_t ="' // TRIM( bc_rs_t ) // '"'  ! bK commented
              CALL message( 'check_parameters', 'CHEM002', 1, 2, 0, 6, 0 )
           ENDIF
-  if(myid==0) print*,'fm kchem_boundary_conds ***** #3 ', mode                                !bK debug    
+!    if(myid==0) print*,'fm kchem_boundary_conds ***** #3 ', mode                                !bK debug    
 
 !
 !--       We might later on need some parameter checkings as in check_parameters.f90's SUBROUTINE check_bc_scalars
@@ -330,7 +343,8 @@ MODULE kchem_driver
       ALLOCATE(chem_species_av(NSPEC))          !bK added
       ALLOCATE(spec_conc_av(nzb:nzt+1,nysg:nyng,nxlg:nxrg,NSPEC)) 
 
-
+      ALLOCATE(phot_frequen(NPHOT))                               !RFo
+      ALLOCATE(freq_1(nzb:nzt+1,nysg:nyng,nxlg:nxrg,NPHOT))
 
 
       if(myid == 0)  then
@@ -369,6 +383,14 @@ MODULE kchem_driver
 
       end do
 
+      do i=1,NPHOT
+         phot_frequen(i)%name = PHOT_NAMES(i)
+         if(myid == 0)  then
+            write(6,'(a,i4,3x,a)')  'Photolysis: ',i,trim(PHOT_NAMES(i))
+         end if
+         phot_frequen(i)%freq(nzb:nzt+1,nysg:nyng,nxlg:nxrg)    => freq_1(:,:,:,i)
+      end do
+
       if(myid== 0) write(9,*) 'fm 100, chem_species_av%name is ', chem_species_av%name
       if(myid== 0) write(9,*) 'fm 100, shape of chem_species_av%conc_av is ', shape(chem_species_av(1)%conc_av)
 
@@ -397,37 +419,35 @@ MODULE kchem_driver
          do i=1,NSPEC
             if(trim(chem_species(i)%name) == 'NO')   then
 !              chem_species(i)%conc = 8.725*1.0E+08
-               chem_species(i)%conc = 0.5_wp                           !added by bK
+               chem_species(i)%conc = 0.05_wp                           !added by bK
 !               chem_species(i)%conc = 0.01_wp                          !added by RFo
             else if(trim(chem_species(i)%name) == 'NO2') then
 !              chem_species(i)%conc = 2.240*1.0E+08             
-               chem_species(i)%conc = 0.1_wp                           !added by bK
-!               chem_species(i)%conc = 0.05_wp                          !added by RFo
+!              chem_species(i)%conc = 0.01_wp                           !added by bK
+                chem_species(i)%conc = 0.05_wp                          !added by RFo
             else if(trim(chem_species(i)%name) == 'O3') then
                chem_species(i)%conc = 0.05_wp                          !added by bK
             else if(trim(chem_species(i)%name) == 'H2O') then
 !              chem_species(i)%conc = 5.326*1.0E+11
                chem_species(i)%conc = 1.30*1.0E+4_wp                   !added by bK
             else if(trim(chem_species(i)%name) == 'O2') then
-!              chem_species(i)%conc = 1.697*1.0E+16
                chem_species(i)%conc = 2.0*1.0E+5_wp                    !added by bK
             else if(trim(chem_species(i)%name) == 'RH') then
-!               chem_species(i)%conc = 9.906*1.0E+01
-                chem_species(i)%conc = 2.0_wp                          !added by bK
-!                chem_species(i)%conc = 0.001_wp                        !added by RFo
+                 chem_species(i)%conc = 0.001_wp                        !added by RFo
+            else if(trim(chem_species(i)%name) == 'CO') then
+                 chem_species(i)%conc = 0.5_wp                        !added by RFo
             else if(trim(chem_species(i)%name) == 'RCHO') then
-!              chem_species(i)%conc = 6.624*1.0E+08
-              chem_species(i)%conc = 2.0_wp                           !added by bK
-!               chem_species(i)%conc = 0.01_wp                          !added by RFo
+!             chem_species(i)%conc = 2.0_wp                           !added by bK
+                chem_species(i)%conc = 0.01_wp                          !added by RFo
 !            else if(trim(chem_species(i)%name) == 'OH') then
 !               chem_species(i)%conc = 1.0*1.0E-07_wp                   !added by bK
 !            else if(trim(chem_species(i)%name) == 'HO2') then
 !               chem_species(i)%conc = 1*1.0E-7_wp                      !added by bK
-!            else if(trim(chem_species(i)%name) == 'RCCO2') then
+!            else if(trim(chem_species(i)%name) == 'RCOO2') then        ! corrected RFo
 !               chem_species(i)%conc = 1.0*1.0E-7_wp                    !added by bK
 !            else if(trim(chem_species(i)%name) == 'RCOO2NO2') then
 !               chem_species(i)%conc = 1.0*1.0E-7_wp                   !added by bK
-            if(myid==0) print*, ' from kchem_initialize #1 '          !bK debug
+!           if(myid==0) print*, ' from kchem_initialize #1 '          !bK debug
            else
 !   H2O = 2.0e+04;
                chem_species(i)%conc(nzb:nzt+1,nysg:nyng,nxlg:nxrg) = 0.0_wp
@@ -461,7 +481,8 @@ MODULE kchem_driver
       CHARACTER (LEN=80)                             ::  line                   ! < dummy string that contains the current line of the parameter file
       REAL(kind=wp), DIMENSION(NMAXFIXSTEPS)         ::  my_steps               ! List of fixed timesteps   my_step(1) = 0.0 automatic stepping
 
-      NAMELIST /kpp_chem/ icntrl, rcntrl, my_steps
+      NAMELIST /kpp_chem/ icntrl, rcntrl, my_steps, call_kpp_at_all_substeps   ! ### RFo call_kpp_at_all_substeps added
+
 
 !--   Read kpp_chem namelist
       icntrl    = 0
@@ -469,6 +490,8 @@ MODULE kchem_driver
       my_steps  = 0.0_wp
       line      = ' '
       icntrl(2) = 1                                   !Atol and Rtol are Scalar
+
+      call_kpp_at_all_substeps = .FALSE.         ! default value RFo
 
       ATOL = 1.0_wp
       RTOL = 0.01_wp
@@ -493,6 +516,8 @@ MODULE kchem_driver
 
       if(myid <= 1)  then
          write(6,*) 'KPP Parin ',icntrl(2),icntrl(3),ATOL(1)
+         write(6,*) 'KPP Parin: call_kpp_at_all_substeps = ',call_kpp_at_all_substeps   ! RFo
+ 
       end if
 
    write(9,*) 'fm kcd, leaving kc_parin #-1'
@@ -501,34 +526,69 @@ MODULE kchem_driver
    END SUBROUTINE kchem_parin
 
    SUBROUTINE kchem_integrate_ij (i, j)
+
+      USE statistics,                                                         &   ! ## RFo
+           ONLY:  weight_pres
+       USE control_parameters,                                                 &   ! ## RFo 
+           ONLY:  dt_3d, intermediate_timestep_count
+
       IMPLICIT   none
       INTEGER,INTENT(IN)       :: i,j
 
 !--   local variables
-      INTEGER                  :: k,m,istat
+      INTEGER                  :: k,m,istatf      ! RFo added f on order to locate istat more easily
       INTEGER,dimension(20)    :: istatus
       REAL(kind=wp),dimension(nzb_s_inner(j,i)+1:nzt,NSPEC)                :: tmp_conc           
       REAL(kind=wp),dimension(nzb_s_inner(j,i)+1:nzt)                      :: tmp_temp
+      REAL(kind=wp),dimension(nzb_s_inner(j,i)+1:nzt,NPHOT)                :: tmp_phot
       REAL(kind=wp),dimension(nzb_s_inner(j,i)+1:nzt)                      :: tmp_fact   !! RFo
 
-! ppm to molecules/cm**3
-       tmp_fact = 10.e-6_wp*6.022e23_wp/22.414_wp/1000._wp     !*T/273.15*1013/p, 10.e-6_iwp replaced by 10.e-6_wp ..!bK
-!      tmp_temp = 292
-!      CALL fill_temp (istat, tmp_temp)                             ! Load constant temperature into kpp context
-      CALL fill_temp (istat, pt(nzb_s_inner(j,i)+1:nzt,j,i))                             ! Load temperature into kpp context
+      REAL(kind=wp)  :: dt_kpp                                             ! RFo
 
+       tmp_temp(:) = pt(:,j,i) * ( hyp(:) / 100000.0_wp )**0.286_wp
+! ppm to molecules/cm**3
+       tmp_fact = 10.e-6_wp*6.022e23_wp/22.414_wp/1000._wp * tmp_temp/273.15_wp*101300.0_wp/hyp 
+       CALL fill_temp (istatf, tmp_temp)                             ! Load constant temperature into kpp context
+!      CALL fill_temp (istatf, pt(nzb_s_inner(j,i)+1:nzt,j,i))                             ! Load temperature into kpp context
 
       do m=1,NSPEC
          tmp_conc(:,m) = chem_species(m)%conc (nzb_s_inner(j,i)+1:nzt,j,i) * tmp_fact(:) ! RFo
       end do
 
+      do m=1,NPHOT
+         tmp_phot(:,m) = phot_frequen(m)%freq (nzb_s_inner(j,i)+1:nzt,j,i)               ! RFo
+      end do
+
       if(myid == 0 .and. i == 10 .and. j == 10)  then
          write(0,*) 'begin KPP step ',dt_3d
       end if
-      if(myid == 0)  print*,'fm kc_driver, calling kpp_integrate in kchem_kpp #10.1'   !bK debug
+!      if(myid == 0)  print*,'fm kc_driver, calling kpp_integrate in kchem_kpp #10.1'   !bK debug
+
+!--    Compute length of time step     ### RFo
+       IF ( call_kpp_at_all_substeps )  THEN
+          dt_kpp = dt_3d * weight_pres(intermediate_timestep_count)
+       ELSE
+          dt_kpp = dt_3d
+       ENDIF
+
       CALL cpu_log( log_point_s(80), 'kpp_integrate', 'start' )
 
-      CALL kpp_integrate (dt_3d, tmp_conc, istatus=istatus)
+      if(i.eq.5.and.j.eq.5) write(06,*) 'dt_kpp= ',dt_kpp 
+      if(i.eq.5.and.j.eq.5) write(06,*) ',tmp_temp= ',tmp_temp(2)
+      if(i.eq.5.and.j.eq.5) write(06,*) ',tmp_phot= ',tmp_phot(2,1)
+      if(i.eq.5.and.j.eq.5) write(06,*) ',tmp_phot= ',tmp_phot(2,2)
+      if(i.eq.5.and.j.eq.5) write(06,*) ',tmp_conc= ',tmp_conc(2,6)
+      if(i.eq.5.and.j.eq.5) write(06,*) ',tmp_conc= ',tmp_conc(2,9)
+      if(i.eq.5.and.j.eq.5) write(06,*) ',tmp_conc= ',tmp_conc(2,12)
+      if(i.eq.5.and.j.eq.5) write(06,*) ',tmp_conc= ',tmp_conc(2,13)
+
+!     CALL kpp_integrate (dt_3d, tmp_conc, istatus=istatus)
+      CALL kpp_integrate (dt_kpp, tmp_conc, tmp_temp, tmp_phot, istatus=istatus)   !!  RFo
+
+      if(i.eq.5.and.j.eq.5) write(06,*) ',tmp_conc,nach= ',tmp_conc(2,6)
+      if(i.eq.5.and.j.eq.5) write(06,*) ',tmp_conc,nach= ',tmp_conc(2,9)
+      if(i.eq.5.and.j.eq.5) write(06,*) ',tmp_conc,nach= ',tmp_conc(2,12)
+      if(i.eq.5.and.j.eq.5) write(06,*) ',tmp_conc,nach= ',tmp_conc(2,13)
 
       CALL cpu_log( log_point_s(80), 'kpp_integrate', 'stop' )
 
@@ -626,16 +686,25 @@ MODULE kchem_driver
 
       spec_name = TRIM(var(4:))                     !bK 1:3 is  'kc_', fm (4:), the array contains NO, NO2, RCHO, O3 fm namelist.
 
-      if(myid == 0) print*,'fm #117@624 kc_check_data_output, var  = ', spec_name 
+!     if(myid == 0) print*,'fm #117@624 kc_check_data_output, var  = ', spec_name 
 
       do n=1,NSPEC
          if(TRIM(spec_name) == TRIM(chem_species(n)%name))   Then
             unit = 'ppm'
-            if(myid == 0) print*,'fm #117@629 inside loop prnt spec_name  ',spec_name
+!           if(myid == 0) print*,'fm #117@629 inside loop prnt spec_name  ',spec_name
          end if
      end do
 
-      print*,'fm #117@633  kchem_check_data_output '       !bK debug
+      do n=1,NPHOT                                                     ! RFo
+         if(TRIM(spec_name) == TRIM(phot_frequen(n)%name))   Then
+            unit = 'sec-1'
+!           if(myid == 0) print*,'fm #117@629 inside loop prnt spec_name  ',spec_name
+         end if
+     end do
+
+
+
+!     print*,'fm #117@633  kchem_check_data_output '       !bK debug
     
 
       RETURN
@@ -674,7 +743,7 @@ MODULE kchem_driver
                  message_string = 'data_output_pr = ' //                        &
                  TRIM( data_output_pr(var_count) ) // ' is not imp' // &
                           'lemented for chemistry = .FALSE.'
-                 CALL message( 'check_parameters', 'PA0185', 1, 2, 0, 6, 0 )
+!                CALL message( 'check_parameters', 'PA0185', 1, 2, 0, 6, 0 )
             ELSE
                 do n = 1, NSPEC
                     IF (TRIM( spec_name ) == TRIM( chem_species(n)%name ) ) THEN 
@@ -862,7 +931,7 @@ MODULE kchem_driver
 
 
 
-   print*,'fm #110@862 write_binary =  ', write_binary
+!  print*,'fm #110@862 write_binary =  ', write_binary
   
    IF ( write_binary(1:4) == 'true' )  THEN
    DO kc_n = 1, NSPEC
@@ -871,7 +940,7 @@ MODULE kchem_driver
 !
       WRITE(14) chems_name; WRITE(14) chem_species(kc_n)%conc
 
-      if(myid==0) print*,' fm #110@889 val of chem_species(n)%name is ', chems_name
+!     if(myid==0) print*,' fm #110@889 val of chem_species(n)%name is ', chems_name
 
    END DO
    

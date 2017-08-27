@@ -15,10 +15,13 @@ set -eu
 
 ########################### User SetUp ####################################
 
-#export KPP_HOME=/home/modelle/kpp_for_palm/eclipse_neon_ws/kpp_for_palm/kpp
+#export KPP_HOME=/home/forkel-r/palmstuff/version02b/chemistry_20170227/KPP_FOR_PALM/kpp
+export KPP_HOME=`pwd`/kpp
 export KPP=$KPP_HOME/bin/kpp
 
-BASE=$HOME/palm/current_version/trunk/KPP_FOR_PALM/kp4
+
+
+BASE=`pwd`/kp4
 
 ########################## End User Setup ################################
 
@@ -27,11 +30,12 @@ WORK=tmp_kp4
 # Default
 
 PREFIX=kchem_kpp
-OUTDIR=$HOME/palm/current_version/trunk/SOURCE
-DEFDIR=$BASE/def_smog
+#OUTDIR=`pwd`/../palm/
+OUTDIR=`pwd`
+DEFDIR=$BASE/def_small_strato
 MODE="scalar"
 VLEN=1
-KEEP="YES"
+KEEP="NO"
 DE_INDEX="NO"
 DE_INDEX_FAST="NO"
 
@@ -39,6 +43,7 @@ export KPP_SOLVER=Rosenbrock
 
 # get Command line option
 
+echo xxxxxxxxxx
 while  getopts :d:ifkp:o:s:v:w:  c     # get options
 do case $c in
       d)   DEFDIR=$OPTARG;;          # directory of definition files
@@ -49,7 +54,7 @@ do case $c in
 
       k)   KEEP="YES";;              # keep Working directory
 
-      o)   OUTDIR=$OPTARG;;          # Output directory of Geneated Code
+      o)   OUTDIR=$OPTARG;;          # Output directory of Generated Code
 
       p)   PREFIX=$OPTARG;;          # Name Prefix
 
@@ -66,6 +71,8 @@ do case $c in
    esac
 done
 shift OPTIND-1
+
+echo $DEFDIR
 
 DEF_PREFIX=${PREFIX}.kpp
 
@@ -85,7 +92,9 @@ KPP_SUBROUTINE_LIST="Initialize"
 KPP_SUBROUTINE_LIST="$KPP_SUBROUTINE_LIST INTEGRATE Fun"
 KPP_SUBROUTINE_LIST="$KPP_SUBROUTINE_LIST KppSolve KppDecomp WLAMCH WLAMCH_ADD"
 KPP_SUBROUTINE_LIST="$KPP_SUBROUTINE_LIST Jac_SP k_arr "
-KPP_SUBROUTINE_LIST="$KPP_SUBROUTINE_LIST Update_RCONST k_3rd "
+#KPP_SUBROUTINE_LIST="$KPP_SUBROUTINE_LIST Update_RCONST k_3rd " 
+# TEST RFo   ARR2 added
+KPP_SUBROUTINE_LIST="$KPP_SUBROUTINE_LIST Update_RCONST k_3rd ARR2"
 KPP_SUBROUTINE_LIST="$KPP_SUBROUTINE_LIST initialize_kpp_ctrl error_output"
 
 # if [[ $MODE = "vector" && $KPP_SOLVER = "ROS2" ]]
@@ -117,7 +126,9 @@ case $KPP_SOLVER in
       KPP_SUBROUTINE_LIST="$KPP_SUBROUTINE_LIST WCOPY WSCAL WAXPY"
     if [[ $MODE != "vector" ]]
     then
-       KPP_SUBROUTINE_LIST="$KPP_SUBROUTINE_LIST Rosenbrock  FunTemplate JacTemplate Update_SUN"
+#     KPP_SUBROUTINE_LIST="$KPP_SUBROUTINE_LIST Rosenbrock  FunTemplate JacTemplate Update_SUN"
+#  TEST RFo
+      KPP_SUBROUTINE_LIST="$KPP_SUBROUTINE_LIST Rosenbrock  FunTemplate JacTemplate"
     fi;;
 
     rosenbrock_mz)
@@ -126,7 +137,8 @@ case $KPP_SOLVER in
 
     rosenbrock)
       KPP_SUBROUTINE_LIST="$KPP_SUBROUTINE_LIST WCOPY WSCAL WAXPY"
-      KPP_SUBROUTINE_LIST="$KPP_SUBROUTINE_LIST Rosenbrock  FunTemplate JacTemplate Update_SUN";;
+#      KPP_SUBROUTINE_LIST="$KPP_SUBROUTINE_LIST Rosenbrock  FunTemplate JacTemplate Update_SUN";;  RFo
+       KPP_SUBROUTINE_LIST="$KPP_SUBROUTINE_LIST Rosenbrock  FunTemplate JacTemplate";;
 
     kpp_lsode)
       KPP_SUBROUTINE_LIST="$KPP_SUBROUTINE_LIST WCOPY WSCAL WAXPY"
@@ -202,7 +214,9 @@ done
 $BASE/bin/kp4.exe $PREFIX $MODE $VLEN $DE_INDEX $DE_INDEX_FAST
 
 
-cp kk_kpp.f90    $OUTDIR/${PREFIX}.f90
+cp -p kk_kpp.f90    $OUTDIR/${PREFIX}.f90
+mv $MY_PWD/../SOURCE/${PREFIX}.f90 $OUTDIR/${PREFIX}.f90.sav
+cp -p kk_kpp.f90    $MY_PWD/../SOURCE/${PREFIX}.f90
 
 echo " "
 echo "Write kpp module -- > " $OUTDIR/${PREFIX}.f90

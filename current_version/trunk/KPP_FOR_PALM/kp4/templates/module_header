@@ -27,6 +27,8 @@
 
   USE kinds,            ONLY: dp=>wp
 
+  USE pegrid,           ONLY: myid, threads_per_task
+
   IMPLICIT        NONE
   PRIVATE
   !SAVE  ! NOTE: OCCURS AGAIN IN AUTOMATICALLY GENERATED CODE ...
@@ -36,11 +38,14 @@
  ! PUBLIC :: SPC_NAMES, EQN_NAMES, EQN_TAGS, REQ_HET, REQ_AEROSOL, REQ_PHOTRAT &
  !         , REQ_MCFCT, IP_MAX, jname
 
-  PUBLIC :: EQN_NAMES, SPC_NAMES, NMAXFIXSTEPS
+  PUBLIC :: EQN_NAMES, SPC_NAMES, PHOT_NAMES, NMAXFIXSTEPS
   PUBLIC :: atol, rtol
   PUBLIC :: NSPEC, nreact
+  PUBLIC :: temp
+  PUBLIC :: phot 
   PUBLIC :: rconst
   PUBLIC :: NVAR
+  PUBLIC :: NPHOT
  
   PUBLIC :: Initialize, Integrate, Update_RCONST
   PUBLIC :: kpp_integrate

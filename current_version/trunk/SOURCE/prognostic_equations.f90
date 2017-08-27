@@ -356,7 +356,7 @@
 #ifdef KPP_CHEM
     USE kchem_driver,                                                          &
         ONLY: chem_species, kchem_integrate, NSPEC, NVAR,                      &   !bK NVAR, SPC_NAMES added bk pe1
-              use_kpp_chemistry, SPC_NAMES     
+              use_kpp_chemistry, SPC_NAMES, call_kpp_at_all_substeps               ! RFo call_kpp_at_all_substeps added
     USE arrays_3d,                                                             &   !bK added moduel arrays_3d  
         ONLY: rssws, rsswst, rs_p, rs,trs_m
 
@@ -428,9 +428,26 @@
      
        DO  i = nxl, nxr
           DO  j = nys, nyn
-            if(myid == 0) print*,'fm prong_eqn AFTER calling kchem_integrate    #9.1 '       !bK debug
+!         if(myid == 0) print*,'fm prong_eqn AFTER calling kchem_integrate    #9.1 '       !bK debug
+          if( i == 10 .and. j == 10)  then     ! -> RFo
+             write(06,*) 'intermediate_timestep_count= ', intermediate_timestep_count
+             write(06,*) 'vor kchem_integrate'
+             DO n=1,NSPEC
+!            write(06,*) chem_species(n)%conc_p( i, j,1), chem_species(n)%conc( i, j,1), chem_species(n)%tconc_m( i, j,1)
+             ENDDO
+            endif
 
+             IF ( intermediate_timestep_count == 1 .OR. call_kpp_at_all_substeps ) THEN  ! RFo
              CALL kchem_integrate (i,j)                                                
+             ENDIF
+
+          if( i == 10 .and. j == 10)  then
+           write(06,*) 'nach kchem_integrate'
+           DO n=1,NSPEC
+!          write(06,*) chem_species(n)%conc_p( i, j,1), chem_species(n)%conc( i, j,1), chem_species(n)%tconc_m( i, j,1)
+           ENDDO
+          endif    ! <- RFo
+
           ENDDO
        ENDDO
 
