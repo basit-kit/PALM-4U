@@ -31,8 +31,8 @@ WORK=tmp_kp4
 
 PREFIX=kchem_kpp
 #OUTDIR=`pwd`/../palm/
-OUTDIR=`pwd`
-DEFDIR=$BASE/def_small_strato
+OUTDIR=`pwd`/../SOURCE
+DEFDIR=$BASE/def_smog
 MODE="scalar"
 VLEN=1
 KEEP="NO"

@@ -29,6 +29,8 @@ Module kchem_kpp
 
   USE kinds,           ONLY: dp=>wp
 
+  USE pegrid,          ONLY: myid,threads_per_task
+
   IMPLICIT        NONE
   PRIVATE
   !SAVE  ! NOTE: OCCURS AGAIN IN AUTOMATICALLY GENERATED CODE ...
@@ -38,11 +40,14 @@ Module kchem_kpp
  ! PUBLIC :: SPC_NAMES,EQN_NAMES,EQN_TAGS,REQ_HET,REQ_AEROSOL,REQ_PHOTRAT &
  !         ,REQ_MCFCT,IP_MAX,jname
 
-  PUBLIC :: EQN_NAMES,SPC_NAMES,NMAXFIXSTEPS
+  PUBLIC :: EQN_NAMES,SPC_NAMES,PHOT_NAMES,NMAXFIXSTEPS
   PUBLIC :: atol,rtol
   PUBLIC :: NSPEC,nreact
+  PUBLIC :: temp
+  PUBLIC :: phot 
   PUBLIC :: rconst
   PUBLIC :: NVAR
+  PUBLIC :: NPHOT
  
   PUBLIC :: Initialize,Integrate,Update_RCONST
   PUBLIC :: kpp_integrate
@@ -78,8 +83,8 @@ Module kchem_kpp
   !          R. Sander, Max- Planck Institute for Chemistry, Mainz, Germany
   !   
   !   File                 : kchem_kpp_Parameters.f90
-  !   Time                 : Mon Mar  6 14:11:23 2017
-  !   Working directory    : /pd/home/khan- b/palm/current_version/trunk/KPP_FOR_PALM/tmp_kp4
+  !   Time                 : Tue Aug 29 11:25:32 2017
+  !   Working directory    : /pd/home/khan- b/github/palm- 4u/current_version/trunk/KPP_FOR_PALM/tmp_kp4
   !   Equation file        : kchem_kpp.kpp
   !   Output root filename : kchem_kpp
   !   
@@ -175,8 +180,8 @@ Module kchem_kpp
   !          R. Sander, Max- Planck Institute for Chemistry, Mainz, Germany
   !   
   !   File                 : kchem_kpp_Global.f90
-  !   Time                 : Mon Mar  6 14:11:23 2017
-  !   Working directory    : /pd/home/khan- b/palm/current_version/trunk/KPP_FOR_PALM/tmp_kp4
+  !   Time                 : Tue Aug 29 11:25:32 2017
+  !   Working directory    : /pd/home/khan- b/github/palm- 4u/current_version/trunk/KPP_FOR_PALM/tmp_kp4
   !   Equation file        : kchem_kpp.kpp
   !   Output root filename : kchem_kpp
   !   
@@ -229,6 +234,9 @@ Module kchem_kpp
 
   !   INLINED global variable declarations
 
+   !    Declaration of global variable declarations for photolysis from INLINE
+
+
   !   INLINED global variable declarations
 
 
@@ -248,8 +256,8 @@ Module kchem_kpp
   !          R. Sander, Max- Planck Institute for Chemistry, Mainz, Germany
   !   
   !   File                 : kchem_kpp_JacobianSP.f90
-  !   Time                 : Mon Mar  6 14:11:23 2017
-  !   Working directory    : /pd/home/khan- b/palm/current_version/trunk/KPP_FOR_PALM/tmp_kp4
+  !   Time                 : Tue Aug 29 11:25:32 2017
+  !   Working directory    : /pd/home/khan- b/github/palm- 4u/current_version/trunk/KPP_FOR_PALM/tmp_kp4
   !   Equation file        : kchem_kpp.kpp
   !   Output root filename : kchem_kpp
   !   
@@ -302,8 +310,8 @@ Module kchem_kpp
   !          R. Sander, Max- Planck Institute for Chemistry, Mainz, Germany
   !   
   !   File                 : kchem_kpp_Monitor.f90
-  !   Time                 : Mon Mar  6 14:11:23 2017
-  !   Working directory    : /pd/home/khan- b/palm/current_version/trunk/KPP_FOR_PALM/tmp_kp4
+  !   Time                 : Tue Aug 29 11:25:32 2017
+  !   Working directory    : /pd/home/khan- b/github/palm- 4u/current_version/trunk/KPP_FOR_PALM/tmp_kp4
   !   Equation file        : kchem_kpp.kpp
   !   Output root filename : kchem_kpp
   !   
@@ -340,6 +348,17 @@ Module kchem_kpp
 
   !   INLINED global variables
 
+   !    Declaration of global variables for photolysis from INLINE
+  INTEGER, PARAMETER :: NPHOT = 2
+   !    phot Photolysis frequencies 
+  REAL(kind=dp) :: phot(NPHOT)
+
+  INTEGER, PARAMETER,PUBLIC :: j_NO2 = 1
+  INTEGER, PARAMETER,PUBLIC :: j_rcho = 2
+
+  CHARACTER(LEN=15), PARAMETER, DIMENSION(NPHOT) :: PHOT_NAMES =   (/ &
+     'J_NO2          ','J_RCHO         '/)
+
   !   End INLINED global variables
 
 
@@ -369,8 +388,8 @@ Module kchem_kpp
   !          R. Sander, Max- Planck Institute for Chemistry, Mainz, Germany
   !   
   !   File                 : kchem_kpp_Initialize.f90
-  !   Time                 : Mon Mar  6 14:11:23 2017
-  !   Working directory    : /pd/home/khan- b/palm/current_version/trunk/KPP_FOR_PALM/tmp_kp4
+  !   Time                 : Tue Aug 29 11:25:32 2017
+  !   Working directory    : /pd/home/khan- b/github/palm- 4u/current_version/trunk/KPP_FOR_PALM/tmp_kp4
   !   Equation file        : kchem_kpp.kpp
   !   Output root filename : kchem_kpp
   !   
@@ -395,8 +414,8 @@ Module kchem_kpp
   !          R. Sander, Max- Planck Institute for Chemistry, Mainz, Germany
   !   
   !   File                 : kchem_kpp_Integrator.f90
-  !   Time                 : Mon Mar  6 14:11:23 2017
-  !   Working directory    : /pd/home/khan- b/palm/current_version/trunk/KPP_FOR_PALM/tmp_kp4
+  !   Time                 : Tue Aug 29 11:25:32 2017
+  !   Working directory    : /pd/home/khan- b/github/palm- 4u/current_version/trunk/KPP_FOR_PALM/tmp_kp4
   !   Equation file        : kchem_kpp.kpp
   !   Output root filename : kchem_kpp
   !   
@@ -453,8 +472,8 @@ Module kchem_kpp
   !          R. Sander, Max- Planck Institute for Chemistry, Mainz, Germany
   !   
   !   File                 : kchem_kpp_LinearAlgebra.f90
-  !   Time                 : Mon Mar  6 14:11:23 2017
-  !   Working directory    : /pd/home/khan- b/palm/current_version/trunk/KPP_FOR_PALM/tmp_kp4
+  !   Time                 : Tue Aug 29 11:25:32 2017
+  !   Working directory    : /pd/home/khan- b/github/palm- 4u/current_version/trunk/KPP_FOR_PALM/tmp_kp4
   !   Equation file        : kchem_kpp.kpp
   !   Output root filename : kchem_kpp
   !   
@@ -480,8 +499,8 @@ Module kchem_kpp
   !          R. Sander, Max- Planck Institute for Chemistry, Mainz, Germany
   !   
   !   File                 : kchem_kpp_Jacobian.f90
-  !   Time                 : Mon Mar  6 14:11:23 2017
-  !   Working directory    : /pd/home/khan- b/palm/current_version/trunk/KPP_FOR_PALM/tmp_kp4
+  !   Time                 : Tue Aug 29 11:25:32 2017
+  !   Working directory    : /pd/home/khan- b/github/palm- 4u/current_version/trunk/KPP_FOR_PALM/tmp_kp4
   !   Equation file        : kchem_kpp.kpp
   !   Output root filename : kchem_kpp
   !   
@@ -507,8 +526,8 @@ Module kchem_kpp
   !          R. Sander, Max- Planck Institute for Chemistry, Mainz, Germany
   !   
   !   File                 : kchem_kpp_Function.f90
-  !   Time                 : Mon Mar  6 14:11:23 2017
-  !   Working directory    : /pd/home/khan- b/palm/current_version/trunk/KPP_FOR_PALM/tmp_kp4
+  !   Time                 : Tue Aug 29 11:25:32 2017
+  !   Working directory    : /pd/home/khan- b/github/palm- 4u/current_version/trunk/KPP_FOR_PALM/tmp_kp4
   !   Equation file        : kchem_kpp.kpp
   !   Output root filename : kchem_kpp
   !   
@@ -536,8 +555,8 @@ Module kchem_kpp
   !          R. Sander, Max- Planck Institute for Chemistry, Mainz, Germany
   !   
   !   File                 : kchem_kpp_Rates.f90
-  !   Time                 : Mon Mar  6 14:11:23 2017
-  !   Working directory    : /pd/home/khan- b/palm/current_version/trunk/KPP_FOR_PALM/tmp_kp4
+  !   Time                 : Tue Aug 29 11:25:32 2017
+  !   Working directory    : /pd/home/khan- b/github/palm- 4u/current_version/trunk/KPP_FOR_PALM/tmp_kp4
   !   Equation file        : kchem_kpp.kpp
   !   Output root filename : kchem_kpp
   !   
@@ -562,8 +581,8 @@ Module kchem_kpp
   !          R. Sander, Max- Planck Institute for Chemistry, Mainz, Germany
   !   
   !   File                 : kchem_kpp_Util.f90
-  !   Time                 : Mon Mar  6 14:11:23 2017
-  !   Working directory    : /pd/home/khan- b/palm/current_version/trunk/KPP_FOR_PALM/tmp_kp4
+  !   Time                 : Tue Aug 29 11:25:32 2017
+  !   Working directory    : /pd/home/khan- b/github/palm- 4u/current_version/trunk/KPP_FOR_PALM/tmp_kp4
   !   Equation file        : kchem_kpp.kpp
   !   Output root filename : kchem_kpp
   !   
@@ -649,6 +668,10 @@ Module kchem_kpp
     module procedure   k_3rd
   end interface        k_3rd
  
+  interface            ARR2
+    module procedure   ARR2
+  end interface        ARR2
+ 
   interface            initialize_kpp_ctrl
     module procedure   initialize_kpp_ctrl
   end interface        initialize_kpp_ctrl
@@ -681,10 +704,6 @@ Module kchem_kpp
     module procedure   JacTemplate
   end interface        JacTemplate
  
-  interface            Update_SUN
-    module procedure   Update_SUN
-  end interface        Update_SUN
- 
   interface            kpp_integrate
     module procedure   kpp_integrate
   end interface        kpp_integrate
@@ -698,8 +717,9 @@ Module kchem_kpp
  CONTAINS
  
 SUBROUTINE Initialize()
-    IMPLICIT NONE               ! bK kkp1
-  
+
+
+
   INTEGER :: i
   REAL(kind=dp) :: x
 
@@ -716,19 +736,16 @@ SUBROUTINE Initialize()
   END DO
 
   !   constant rate coefficients
-  RCONST(2) = 8.125e-19_dp      !bK
-  RCONST(3) = 9.897e-13_dp      !bK
-  RCONST(4) = 1.405e-10_dp      !bK
-  RCONST(5) = 8.713e-10_dp      !bK
-  RCONST(7) = 4.518e-10_dp      !bK
-  RCONST(8) = 4.195e-10_dp      !bK
-  RCONST(9) = 4.195e-10_dp      !bK
-  RCONST(10) = 6.004e-10_dp     !bK
-  RCONST(11) = 2.566e-10_dp     !bK
-  RCONST(12) = 7.976e-16_dp     !bK
-  
-
-
+  RCONST(2) = 8.125e-19
+  RCONST(3) = 9.897e-13
+  RCONST(4) = 1.405e-10
+  RCONST(5) = 8.713e-10
+  RCONST(7) = 4.518e-10
+  RCONST(8) = 4.195e-10
+  RCONST(9) = 4.195e-10
+  RCONST(10) = 6.004e-10
+  RCONST(11) = 2.566e-10
+  RCONST(12) = 7.976e-16
   !   END constant rate coefficients
 
   !   INLINED initializations
@@ -741,7 +758,7 @@ END SUBROUTINE Initialize
 SUBROUTINE INTEGRATE( TIN, TOUT, &
   ICNTRL_U, RCNTRL_U, ISTATUS_U, RSTATUS_U, IERR_U)
 
-    IMPLICIT NONE                                    ! bK kkp2
+
    REAL(kind=dp), INTENT(IN) :: TIN   !  Start Time
    REAL(kind=dp), INTENT(IN) :: TOUT  !  End Time
     !  Optional input parameters and statistics
@@ -774,7 +791,7 @@ SUBROUTINE INTEGRATE( TIN, TOUT, &
      WHERE(RCNTRL_U(:) > 0) RCNTRL(:) = RCNTRL_U(:)
    END IF
 
-!   print*,'fm kchem_kpp->integrate, calling Rosenbrock  #13.1'          !bK  debug
+
    CALL Rosenbrock(NVAR,VAR,TIN,TOUT,   &
          ATOL,RTOL,                &
          RCNTRL,ICNTRL,RSTATUS,ISTATUS,IERR)
@@ -793,7 +810,7 @@ SUBROUTINE INTEGRATE( TIN, TOUT, &
 END SUBROUTINE INTEGRATE
  
 SUBROUTINE Fun(V, F, RCT, Vdot)
-        IMPLICIT NONE               ! bK kkp3
+
   !   V -  Concentrations of variable species (local)
   REAL(kind=dp) :: V(NVAR)
   !   F -  Concentrations of fixed species (local)
@@ -805,18 +822,18 @@ SUBROUTINE Fun(V, F, RCT, Vdot)
 
 
   !   Computation of equation rates
-  A(1) = RCT(1)*V(11)           !bK
-  A(2) = 8.125e-19_dp*V(2)*F(2)    !bK
-  A(3) = 9.897e-13_dp*V(5)*V(10)   !bK
-  A(4) = 1.405e-10_dp*V(3)*V(12)   !bK
-  A(5) = 8.713e-10_dp*V(8)*V(12)   !bK
-  A(6) = RCT(6)*V(8)            !bK
-  A(7) = 4.518e-10_dp*V(6)*V(10)   !bK
-  A(8) = 4.195e-10_dp*V(9)*V(10)   !bK
-  A(9) = 4.195e-10_dp*V(7)*V(10)   !bK
-  A(10) = 6.004e-10_dp*V(11)*V(12) !bK
-  A(11) = 2.566e-10_dp*V(7)*V(11)  !bK
-  A(12) = 7.976e-16_dp*V(4)        !bK
+  A(1) = RCT(1)*V(11)
+  A(2) = 8.125e-19*V(2)*F(2)
+  A(3) = 9.897e-13*V(5)*V(10)
+  A(4) = 1.405e-10*V(3)*V(12)
+  A(5) = 8.713e-10*V(8)*V(12)
+  A(6) = RCT(6)*V(8)
+  A(7) = 4.518e-10*V(6)*V(10)
+  A(8) = 4.195e-10*V(9)*V(10)
+  A(9) = 4.195e-10*V(7)*V(10)
+  A(10) = 6.004e-10*V(11)*V(12)
+  A(11) = 2.566e-10*V(7)*V(11)
+  A(12) = 7.976e-16*V(4)
 
   !   Aggregate function
   Vdot(1) = A(10)
@@ -835,7 +852,7 @@ SUBROUTINE Fun(V, F, RCT, Vdot)
 END SUBROUTINE Fun
  
 SUBROUTINE KppSolve(JVS, X)
-    IMPLICIT NONE                   ! bK kkp4
+
   !   JVS -  sparse Jacobian of variables
   REAL(kind=dp) :: JVS(LU_NONZERO)
   !   X -  Vector for variables
@@ -866,7 +883,7 @@ SUBROUTINE KppDecomp( JVS, IER)
   !   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   !          Sparse LU factorization
   !   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        IMPLICIT NONE               ! bK  kkp5
+
 
       INTEGER  :: IER
       REAL(kind=dp) :: JVS(LU_NONZERO), W(NVAR), a
@@ -907,7 +924,7 @@ END SUBROUTINE KppDecomp
 !          CALL SLAMCH('E') or CALL DLAMCH('E')
   !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   !        USE kchem_kpp_Precision
-        IMPLICIT NONE               ! bk kkp6
+
       CHARACTER ::  C
       INTEGER    :: i
       REAL(kind=dp), SAVE  ::  Eps
@@ -935,14 +952,14 @@ END SUBROUTINE KppDecomp
  
       SUBROUTINE WLAMCH_ADD( A, B, Suma)
   !        USE kchem_kpp_Precision
-      IMPLICIT NONE                 ! bK kkp7
+      
       REAL(kind=dp) A, B, Suma
       Suma = A +  B
 
       END SUBROUTINE WLAMCH_ADD
  
 SUBROUTINE Jac_SP(V, F, RCT, JVS)
-        IMPLICIT NONE           ! bK kkp8        
+
   !   V -  Concentrations of variable species (local)
   REAL(kind=dp) :: V(NVAR)
   !   F -  Concentrations of fixed species (local)
@@ -957,46 +974,46 @@ SUBROUTINE Jac_SP(V, F, RCT, JVS)
   !   B -  Temporary array
   REAL(kind=dp) :: B(21)
 
- !   B(1) = dA(1)/dV(11)
+  !   B(1) = dA(1)/dV(11)
   B(1) = RCT(1)
   !   B(2) = dA(2)/dV(2)
-  B(2) = 8.125e-19_dp*F(2)      !bK
+  B(2) = 8.125e-19*F(2)
   !   B(4) = dA(3)/dV(5)
-  B(4) = 9.897e-13_dp*V(10)     !bK
-  !   B(5) = dA(3)/dV(10)       
-  B(5) = 9.897e-13_dp*V(5)      !bK
+  B(4) = 9.897e-13*V(10)
+  !   B(5) = dA(3)/dV(10)
+  B(5) = 9.897e-13*V(5)
   !   B(6) = dA(4)/dV(3)
-  B(6) = 1.405e-10_dp*V(12)     !bK
+  B(6) = 1.405e-10*V(12)
   !   B(7) = dA(4)/dV(12)
-  B(7) = 1.405e-10_dp*V(3)      !bK
+  B(7) = 1.405e-10*V(3)
   !   B(8) = dA(5)/dV(8)
-  B(8) = 8.713e-10_dp*V(12)     !bK
+  B(8) = 8.713e-10*V(12)
   !   B(9) = dA(5)/dV(12)
-  B(9) = 8.713e-10_dp*V(8)      !bK
+  B(9) = 8.713e-10*V(8)
   !   B(10) = dA(6)/dV(8)
   B(10) = RCT(6)
   !   B(11) = dA(7)/dV(6)
-  B(11) = 4.518e-10_dp*V(10)    !bK
+  B(11) = 4.518e-10*V(10)
   !   B(12) = dA(7)/dV(10)
-  B(12) = 4.518e-10_dp*V(6)     !bK
+  B(12) = 4.518e-10*V(6)
   !   B(13) = dA(8)/dV(9)
-  B(13) = 4.195e-10_dp*V(10)    !bK
+  B(13) = 4.195e-10*V(10)
   !   B(14) = dA(8)/dV(10)
-  B(14) = 4.195e-10_dp*V(9)     !bK
+  B(14) = 4.195e-10*V(9)
   !   B(15) = dA(9)/dV(7)
-  B(15) = 4.195e-10_dp*V(10)    !bK
+  B(15) = 4.195e-10*V(10)
   !   B(16) = dA(9)/dV(10)
-  B(16) = 4.195e-10_dp*V(7)     !bK
+  B(16) = 4.195e-10*V(7)
   !   B(17) = dA(10)/dV(11)
-  B(17) = 6.004e-10_dp*V(12)    !bK
+  B(17) = 6.004e-10*V(12)
   !   B(18) = dA(10)/dV(12)
-  B(18) = 6.004e-10_dp*V(11)    !bK
+  B(18) = 6.004e-10*V(11)
   !   B(19) = dA(11)/dV(7)
-  B(19) = 2.566e-10_dp*V(11)    !bK
+  B(19) = 2.566e-10*V(11)
   !   B(20) = dA(11)/dV(11)
-  B(20) = 2.566e-10_dp*V(7)     !bK
+  B(20) = 2.566e-10*V(7)
   !   B(21) = dA(12)/dV(4)
-  B(21) = 7.976e-16_dp          !bK
+  B(21) = 7.976e-16
 
 ! Construct the Jacobian terms from B's
   !   JVS(1) = Jac_FULL(1,1)
@@ -1122,7 +1139,7 @@ END SUBROUTINE Jac_SP
  
   ELEMENTAL REAL(kind=dp) FUNCTION k_arr (k_298,tdep,temp)
      !  Arrhenius function
-    IMPLICIT NONE                                           ! bK kkp9
+
     REAL,     INTENT(IN) :: k_298  !  k at T = 298.15K
     REAL,     INTENT(IN) :: tdep   !  temperature dependence
     REAL(kind=dp), INTENT(IN) :: temp   !  temperature
@@ -1134,7 +1151,6 @@ END SUBROUTINE Jac_SP
   END FUNCTION k_arr
  
 SUBROUTINE Update_RCONST()
-    IMPLICIT NONE               ! bK kkp10
  integer         :: j,k
 
   k = is
@@ -1144,12 +1160,12 @@ SUBROUTINE Update_RCONST()
 
   !   End INLINED RCONST
 
-  RCONST(1) = (0.533_dp)                       ! bK added _dp photo dissociation k of NO2
+  RCONST(1) = (0.533_dp)
   !   RCONST(2) = constant rate coefficient
   !   RCONST(3) = constant rate coefficient
   !   RCONST(4) = constant rate coefficient
   !   RCONST(5) = constant rate coefficient
-  RCONST(6) = (1.91E-4_dp)                      !bK added _dp photodissociation k of RCHO
+  RCONST(6) = (1.91E-4_dp)
   !   RCONST(7) = constant rate coefficient
   !   RCONST(8) = constant rate coefficient
   !   RCONST(9) = constant rate coefficient
@@ -1160,7 +1176,7 @@ SUBROUTINE Update_RCONST()
 END SUBROUTINE Update_RCONST
  
   ELEMENTAL REAL(kind=dp) FUNCTION k_3rd(temp,cair,k0_300K,n,kinf_300K,m,fc)
-    IMPLICIT NONE                   ! bK kkp11
+
     INTRINSIC LOG10
 
     REAL(kind=dp), INTENT(IN) :: temp       !  temperature [K]
@@ -1180,8 +1196,18 @@ END SUBROUTINE Update_RCONST
 
   END FUNCTION k_3rd
  
+  !    REAL(kind=dp) (kind=dp) FUNCTION ARR2( A0, B0)
+  !       REAL (kind=dp) A0,B0
+  !       ARR2 =  A0 *EXP( B0 / 20.0_dp)
+  !    END FUNCTION ARR2
+    REAL(kind=dp) FUNCTION ARR2( a0, b0, temp)
+       REAL(kind=dp) :: temp
+       REAL(kind=dp) :: a0,b0
+       ARR2 = a0 *EXP( - b0 / temp)
+    END FUNCTION ARR2
+ 
 SUBROUTINE initialize_kpp_ctrl(status, iou, modstr)
-    IMPLICIT NONE           ! bK  kkp12
+
 
    !  I/O
   INTEGER,          INTENT(OUT) :: status
@@ -1233,7 +1259,7 @@ SUBROUTINE initialize_kpp_ctrl(status, iou, modstr)
 END SUBROUTINE initialize_kpp_ctrl
  
 SUBROUTINE error_output(C,ierr,PE)
-    IMPLICIT NONE                   ! bK kkp13   
+
 
   INTEGER, INTENT(IN) :: ierr
   INTEGER, INTENT(IN) :: PE
@@ -1253,7 +1279,7 @@ END SUBROUTINE error_output
   !           CALL  SCOPY(N,X,1,Y,1)   or   CALL  DCOPY(N,X,1,Y,1)
   !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   !       USE kchem_kpp_Precision
-      IMPLICIT NONE                 ! bK kkp14 
+      
       INTEGER  :: i,incX,incY,M,MP1,N
       REAL(kind=dp) :: X(N),Y(N)
 
@@ -1288,7 +1314,7 @@ END SUBROUTINE error_output
   !       replace this by the function from the optimized BLAS implementation:
   !           CALL SSCAL(N,Alpha,X,1) or  CALL DSCAL(N,Alpha,X,1)
   !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-        IMPLICIT NONE                   ! bK kkp15
+
       INTEGER  :: i,incX,M,MP1,N
       REAL(kind=dp)  :: X(N),Alpha
       REAL(kind=dp), PARAMETER  :: ZERO=0.0_dp, ONE=1.0_dp
@@ -1350,7 +1376,7 @@ END SUBROUTINE error_output
   !       replace this by the function from the optimized BLAS implementation:
   !           CALL SAXPY(N,Alpha,X,1,Y,1) or  CALL DAXPY(N,Alpha,X,1,Y,1)
   !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-        IMPLICIT NONE           ! bK kkp16
+
       INTEGER  :: i,incX,incY,M,MP1,N
       REAL(kind=dp) :: X(N),Y(N),Alpha
       REAL(kind=dp), PARAMETER :: ZERO = 0.0_dp
@@ -1492,7 +1518,7 @@ SUBROUTINE Rosenbrock(N,Y,Tstart,Tend, &
   !  
   !  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    IMPLICIT NONE               ! bK kkp17
+
   !  ~~~>  Arguments
    INTEGER,       INTENT(IN)    :: N
    REAL(kind=dp), INTENT(INOUT) :: Y(N)
@@ -1671,7 +1697,7 @@ CONTAINS  !   SUBROUTINES internal to Rosenbrock
   !  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   
   !      Handles all error messages
   !  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   
-    IMPLICIT NONE                   ! bK kkp18  
+  
    REAL(kind=dp), INTENT(IN) :: T, H
    INTEGER, INTENT(IN)  :: Code
    INTEGER, INTENT(OUT) :: IERR
@@ -1721,7 +1747,7 @@ CONTAINS  !   SUBROUTINES internal to Rosenbrock
   !        and its coefficients ros_{A,C,M,E,Alpha,Gamma}
   !  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    IMPLICIT NONE           ! bK kkp19
+
   !  ~~~> Input: the initial condition at Tstart; Output: the solution at T
    REAL(kind=dp), INTENT(INOUT) :: Y(N)
   !  ~~~> Input: integration interval
@@ -1915,7 +1941,7 @@ Stage: DO istage = 1, ros_S
   !  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   !  ~~~> Computes the "scaled norm" of the error vector Yerr
   !  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    IMPLICIT NONE           ! bK kkp20
+
   !   Input arguments
    REAL(kind=dp), INTENT(IN) :: Y(N), Ynew(N), &
           Yerr(N), AbsTol(N), RelTol(N)
@@ -1948,7 +1974,7 @@ Stage: DO istage = 1, ros_S
   !  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   !  ~~~> The time partial derivative of the function by finite differences
   !  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    IMPLICIT NONE       !bK kkp22
+
   !  ~~~> Input arguments
    REAL(kind=dp), INTENT(IN) :: T, Roundoff, Y(N), Fcn0(N)
   !  ~~~> Output arguments
@@ -1977,7 +2003,7 @@ Stage: DO istage = 1, ros_S
   !         - half the step size if LU decomposition fails and retry
   !         - exit after 5 consecutive fails
   !   - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - - 
-    IMPLICIT NONE       ! bK kkp23
+
   !  ~~~> Input arguments
 #ifdef FULL_ALGEBRA    
    REAL(kind=dp), INTENT(IN) ::  Jac0(N,N)
@@ -2053,7 +2079,6 @@ Stage: DO istage = 1, ros_S
   !    Template for the LU decomposition
   !  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   !  ~~~> Inout variables
-    IMPLICIT NONE               !bk kkp24
 #ifdef FULL_ALGEBRA    
    REAL(kind=dp), INTENT(INOUT) :: A(N,N)
 #else   
@@ -2079,8 +2104,6 @@ Stage: DO istage = 1, ros_S
   !    Template for the forward/backward substitution (using pre-computed LU decomposition)
   !  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   !  ~~~> Input variables
-    IMPLICIT NONE               !bk kkp25
-
 #ifdef FULL_ALGEBRA    
    REAL(kind=dp), INTENT(IN) :: A(N,N)
    INTEGER :: ISING
@@ -2111,7 +2134,7 @@ Stage: DO istage = 1, ros_S
   !  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   !   - - -  AN L- STABLE METHOD, 2 stages, order 2
   !  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   IMPLICIT NONE               !bk kkp26
+
    DOUBLE PRECISION g
 
     g = 1.0_dp +  1.0_dp/SQRT(2.0_dp)
@@ -2158,7 +2181,7 @@ Stage: DO istage = 1, ros_S
   !  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   !   - - -  AN L- STABLE METHOD, 3 stages, order 3, 2 function evaluations
   !  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   IMPLICIT NONE               !bk kkp27
+
    rosMethod = RS3
   !  ~~~> Name of the method
    ros_Name = 'ROS-3'
@@ -2220,7 +2243,7 @@ Stage: DO istage = 1, ros_S
   !        SPRINGER SERIES IN COMPUTATIONAL MATHEMATICS,
   !        SPRINGER- VERLAG (1990)
   !  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    IMPLICIT NONE               !bk kkp28
+
 
    rosMethod = RS4
   !  ~~~> Name of the method
@@ -2285,7 +2308,7 @@ Stage: DO istage = 1, ros_S
   !  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   !   - - -  A STIFFLY- STABLE METHOD, 4 stages, order 3
   !  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   IMPLICIT NONE               !bk kkp29
+
 
    rosMethod = RD3
   !  ~~~> Name of the method
@@ -2356,7 +2379,7 @@ Stage: DO istage = 1, ros_S
   !        SPRINGER SERIES IN COMPUTATIONAL MATHEMATICS,
   !        SPRINGER- VERLAG (1996)
   !  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    IMPLICIT NONE               !bk kkp30
+
 
     rosMethod = RD4
   !  ~~~> Name of the method
@@ -2462,7 +2485,6 @@ Stage: DO istage = 1, ros_S
   !   Table 4.1- 4.2
   !  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    IMPLICIT NONE               !bk kkp31
 
     rosMethod = RG3
   !  ~~~> Name of the method
@@ -2530,8 +2552,6 @@ SUBROUTINE FunTemplate( T, Y, Ydot)
   !    Updates the rate coefficients (and possibly the fixed species) at each call
   !  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   !  ~~~> Input variables
-    IMPLICIT NONE               !bk kkp32
-
    REAL(kind=dp) :: T, Y(NVAR)
   !  ~~~> Output variables
    REAL(kind=dp) :: Ydot(NVAR)
@@ -2540,8 +2560,6 @@ SUBROUTINE FunTemplate( T, Y, Ydot)
 
    Told = TIME
    TIME = T
-   CALL Update_SUN()
-   CALL Update_RCONST()
    CALL Fun( Y, FIX, RCONST, Ydot)
    TIME = Told
 
@@ -2553,7 +2571,6 @@ SUBROUTINE JacTemplate( T, Y, Jcb)
   !    Updates the rate coefficients (and possibly the fixed species) at each call
   !  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   !  ~~~> Input variables
-    IMPLICIT NONE               !bk kkp33
     REAL(kind=dp) :: T, Y(NVAR)
   !  ~~~> Output variables
 #ifdef FULL_ALGEBRA    
@@ -2569,8 +2586,6 @@ SUBROUTINE JacTemplate( T, Y, Jcb)
 
     Told = TIME
     TIME = T
-    CALL Update_SUN()
-    CALL Update_RCONST()
 #ifdef FULL_ALGEBRA    
     CALL Jac_SP(Y, FIX, RCONST, JV)
     DO j=1,NVAR
@@ -2588,42 +2603,14 @@ SUBROUTINE JacTemplate( T, Y, Jcb)
 
 END SUBROUTINE JacTemplate
  
-  SUBROUTINE Update_SUN()
-        IMPLICIT NONE               !bk kkp34
-       ! USE kchem_kpp_Parameters
-       ! USE kchem_kpp_Global
-
-
-    REAL(kind=dp) :: SunRise, SunSet
-    REAL(kind=dp) :: Thour, Tlocal, Ttmp 
-     !  PI -  Value of pi
-    REAL(kind=dp), PARAMETER :: PI = 3.14159265358979d0
-    
-    SunRise = 4.5_dp 
-    SunSet  = 19.5_dp 
-    Thour = TIME/3600.0_dp 
-    Tlocal = Thour -  (INT(Thour)/24)*24
-
-    IF ((Tlocal>=SunRise).AND.(Tlocal<=SunSet))THEN
-       Ttmp = (2.0_dp*Tlocal- SunRise-SunSet)/(SunSet- SunRise)     ! bK added _dp
-       IF (Ttmp.GT.0) THEN
-          Ttmp =  Ttmp*Ttmp
-       ELSE
-          Ttmp = - Ttmp*Ttmp
-       END IF
-       SUN =(1.0_dp +  COS(PI*Ttmp))/2.0_dp 
-    ELSE
-       SUN = 0.0_dp 
-    END IF
-
- END SUBROUTINE Update_SUN
- 
-SUBROUTINE kpp_integrate (time_step_len,Conc,ierrf,xNacc,xNrej,istatus,l_debug,PE) 
+SUBROUTINE kpp_integrate (time_step_len,Conc,Tempk,photo,ierrf,xNacc,xNrej,istatus,l_debug,PE) 
                                                                     
   IMPLICIT NONE                                                     
                                                                     
   REAL(dp),INTENT(IN)                   :: time_step_len           
   REAL(dp),INTENT(INOUT),dimension(:,:) :: Conc                    
+  REAL(dp),INTENT(INOUT),dimension(:,:) :: photo                   
+  REAL(dp),INTENT(IN),dimension(:)      :: Tempk                   
   INTEGER, INTENT(OUT),OPTIONAL        :: ierrf(:)                
   INTEGER, INTENT(OUT),OPTIONAL        :: xNacc(:)                
   INTEGER, INTENT(OUT),OPTIONAL        :: xNrej(:)                
@@ -2636,25 +2623,26 @@ SUBROUTINE kpp_integrate (time_step_len,Conc,ierrf,xNacc,xNrej,istatus,l_debug,P
   integer,dimension(20)                 :: istatus_u               
   integer                                :: ierr_u                  
                                                                     
-!  print*,'fm kpp_integrate #10'             !bK debug
-                                                                
+                                                                    
   if (present (istatus)) istatus = 0                              
                                                                     
   DO k=1,VL_glo,VL_DIM                                              
-!    print*,'vals of vl_glo, vl_dim, is, k, are :',VL_glo,VL_DIM,is,k
     is = k                                                          
     ie = min(k+VL_DIM-1,VL_glo)                                     
     vl = ie-is+1                                                    
                                                                     
     C(:) = Conc(is,:)                                             
-
-!    print*,'fm kpp_integrate, calling update_rconst #11.1 '                          !bK debug                                                                   
-    CALL update_rconst   ! photo k of NO2 & RCHO to RCONST(1) & RCONST(6)                                           
-     dt = time_step_len                                              
+                                                                    
+    TEMP = Tempk(is)                                             
+                                                                    
+    phot(:) = photo(is,:)                                             
+                                                                    
+    CALL update_rconst                                              
+                                                                    
+    dt = time_step_len                                              
                                                                     
     ! integrate from t=0 to t=dt                                    
-!    print*, 'fm kpp_integrate, calling integrate #12.1 '                           !bk debug
-    CALL integrate(0._dp,dt,icntrl,rcntrl,istatus_u = istatus_u,ierr_u=ierr_u )     !bK
+    CALL integrate(0._dp,dt,icntrl,rcntrl,istatus_u = istatus_u,ierr_u=ierr_u)
                                                                     
                                                                     
    IF (PRESENT(l_debug) .AND. PRESENT(PE)) THEN                       
@@ -2685,7 +2673,7 @@ SUBROUTINE kpp_integrate (time_step_len,Conc,ierrf,xNacc,xNrej,istatus,l_debug,P
 END SUBROUTINE kpp_integrate                                        
  
   SUBROUTINE fill_TEMP(status,array) 
-    IMPLICIT NONE                                   ! bK kkp35 
+ 
     integer,intent(OUT)               :: status 
     real (dp),intent(IN),dimension(:) :: array 
  

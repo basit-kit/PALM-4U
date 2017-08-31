@@ -1,7 +1,0 @@
-#include      small_strato.spc
-#include      small_strato.eqn
-#INTEGRATOR rosenbrock
-#LANGUAGE   Fortran90
-//#DRIVER     general
-#HESSIAN    on
-#STOICMAT   on

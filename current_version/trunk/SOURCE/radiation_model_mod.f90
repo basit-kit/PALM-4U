@@ -483,7 +483,7 @@
            rad_sw_cs_hr_av, rad_sw_hr, rad_sw_hr_av, sigma_sb,                 &
            skip_time_do_radiation, time_radiation, unscheduled_radiation_calls,&
            zenith, calc_zenith, sun_direction, sun_dir_lat, sun_dir_lon,       &
-           day_init, time_utc_init
+           day, day_init, lambda, lat, lon, time_utc, time_utc_init
 
 
 #if defined ( __rrtmg )
