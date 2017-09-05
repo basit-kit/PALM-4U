@@ -1,0 +1,37 @@
+//kchem_kpp.kpp
+//
+//Former revisions
+//----------------
+// $Id$
+//
+#include      smog.spc
+#include      smog.eqn
+#INTEGRATOR rosenbrock
+#LANGUAGE   Fortran90
+//#DRIVER     general
+#HESSIAN    on
+#STOICMAT   on
+#INLINE F90_GLOBAL
+  !   Declaration of global variable declarations for photolysis from INLINE
+
+#ENDINLINE
+// *******************************************************************************************
+// *** adapt the lines below occurding to the photolysis reactions of your mechanism         *
+// *** adapt the number of photolysis frequencies NPHO                                       *
+// *** adapt/extend the indices in the INTEGER, PARAMETER,PUBLIC statement below             *
+// *** adapt/extend PHOT_NAMES: Note that the order of PHOT_NAMES and the indices must match *
+// *******************************************************************************************
+//
+#INLINE F90_DATA
+  !   Declaration of global variables for photolysis from INLINE
+  INTEGER, PARAMETER :: NPHOT = 2
+  !   phot Photolysis frequencies 
+  REAL(kind=dp) :: phot(NPHOT)
+
+  INTEGER, PARAMETER,PUBLIC :: j_NO2 = 1
+  INTEGER, PARAMETER,PUBLIC :: j_rcho = 2
+
+  CHARACTER(LEN=15), PARAMETER, DIMENSION(NPHOT) :: PHOT_NAMES =  (/ &
+     'J_NO2          ','J_RCHO         '/)
+#ENDINLINE
+

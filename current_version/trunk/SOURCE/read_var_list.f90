@@ -23,7 +23,7 @@
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: read_var_list.f90 2043 2016-11-02 13:48:37Z suehring $
+! $Id: read_var_list.f90 2382 2017-09-01 12:20:53Z basit $
 !
 ! 2042 2016-11-02 13:47:31Z suehring
 ! Bugfix, read restart data for wall_heatflux, wall_qflux and wall_sflux

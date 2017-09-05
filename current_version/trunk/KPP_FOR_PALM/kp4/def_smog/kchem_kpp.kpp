@@ -1,3 +1,9 @@
+//kchem_kpp.kpp
+//
+//Former revisions
+//----------------
+// $Id: kchem_kpp.kpp 2390 2017-09-04 13:44:46Z basit $
+//
 #include      smog.spc
 #include      smog.eqn
 #INTEGRATOR rosenbrock

@@ -24,7 +24,7 @@
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: data_output_3d.f90 2159 2017-02-22 18:01:07Z kanani $
+! $Id: data_output_3d.f90 2382 2017-09-01 12:20:53Z basit $
 !
 ! 2031 2016-10-21 15:11:58Z knoop
 ! renamed variable rho to rho_ocean and rho_av to rho_ocean_av

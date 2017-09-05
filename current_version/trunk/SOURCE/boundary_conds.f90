@@ -23,7 +23,7 @@
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: boundary_conds.f90 2001 2016-08-20 18:41:22Z knoop $
+! $Id: boundary_conds.f90 2382 2017-09-01 12:20:53Z basit $
 !
 ! 2000 2016-08-20 18:09:15Z knoop
 ! Forced header and separation lines into 80 columns

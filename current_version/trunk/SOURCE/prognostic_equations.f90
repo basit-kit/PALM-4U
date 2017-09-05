@@ -27,7 +27,7 @@
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: prognostic_equations.f90 2159 2017-02-22 18:01:07Z kanani $
+! $Id: prognostic_equations.f90 2382 2017-09-01 12:20:53Z basit $
 !
 ! 2031 2016-10-21 15:11:58Z knoop
 ! renamed variable rho to rho_ocean

@@ -24,7 +24,7 @@
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: check_parameters.f90 2159 2017-02-22 18:01:07Z kanani $
+! $Id: check_parameters.f90 2382 2017-09-01 12:20:53Z basit $
 !
 ! 2052 2016-11-08 15:14:59Z gronemeier
 ! Bugfix: remove setting of default value for recycling_width

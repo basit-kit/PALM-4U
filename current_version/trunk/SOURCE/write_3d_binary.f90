@@ -23,7 +23,7 @@
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: write_3d_binary.f90 2032 2016-10-21 15:13:51Z knoop $
+! $Id: write_3d_binary.f90 2386 2017-09-04 12:23:03Z basit $
 !
 ! 2031 2016-10-21 15:11:58Z knoop
 ! renamed variable rho_av to rho_ocean_av
@@ -142,9 +142,10 @@
     USE spectra_mod,                                                           &
         ONLY:  spectrum_x, spectrum_y
 
+#ifdef KPP_CHEM         
     USE kchem_driver,                                                          &
         ONLY: kchem_last_actions, use_kpp_chemistry                            
-
+#endif
 
     IMPLICIT NONE
 

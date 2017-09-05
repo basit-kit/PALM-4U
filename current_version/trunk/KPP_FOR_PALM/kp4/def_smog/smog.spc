@@ -1,7 +1,12 @@
+{smog.spc
+Former revisions
+----------------
+ $Id: smog.spc 2406 2017-09-05 12:48:40Z basit $
+}
 #include atoms
 
  #DEFVAR  
-    O           = O ;           {oxygen atomic ground state (3P)}
+    O       = O ;      		{oxygen atomic ground state (3P)}
     O3		= 3O ;          {ozone}  
     NO		= N + O ;       {nitric oxide}  
     NO2		= N + 2O ;      {nitrogen dioxide} 
@@ -13,25 +18,25 @@
     OH		= O + H ;       {hydroxyl radical}  
     HO2		= H + 2O ;      {perhydroxyl radical}                     
     H2O2	= 2H + 2O ;     {hydrogen peroxide} 
-    CH3         = C + 3H ;      {methyl radical}
-    CH3O        = C + 3H + O ;  {methoxy radical}
-    CH3O2       = C + 3H + 2O ; {methylperoxy radical}
-    CH3OOH      = C + 4H + 2O ; {CH4O2      methylperoxy alcohol}
-    HCO         = H + C + O ;   {CHO  formyl radical}
-    CH2O        = C + 2H + O ;  {formalydehyde}
+    CH3     = C + 3H ;      {methyl radical}
+    CH3O    = C + 3H + O ;  {methoxy radical}
+    CH3O2   = C + 3H + 2O ; {methylperoxy radical}
+    CH3OOH  = C + 4H + 2O ; {CH4O2      methylperoxy alcohol}
+    HCO     = H + C + O ;   {CHO  formyl radical}
+    CH2O    = C + 2H + O ;  {formalydehyde}
+    CO      = C + O ;       {carbon monoxide}   
     
-    RH          = ignore ;
-    RO2         = ignore ;
-    RCHO        = ignore ;
-    RCOO2       = ignore ;
-    RCOO2NO2    = ignore ;
+    RH      = ignore ;
+    RO2     = ignore ;
+    RCHO    = ignore ;
+    RCOO2   = ignore ;
+    RCOO2NO2= ignore ;
 
 #DEFFIX
     H2O		= H + 2O ;      {water}
     H2		= 2H ;          {molecular hydrogen}
-    O2          = 2O ;          {molecular oxygen}              
-    N2          = 2N ;          {molecular nitrogen}              
+    O2      = 2O ;          {molecular oxygen}              
+    N2      = 2N ;          {molecular nitrogen}              
     CH4		= C + 4H ;      {methane} 
-    CO		= C + O ;       {carbon monoxide}   
-    CO2         = C + 2O ;      {carbon dioxide}
+    CO2     = C + 2O ;      {carbon dioxide}
 

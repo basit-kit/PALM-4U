@@ -23,7 +23,7 @@
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: read_3d_binary.f90 2032 2016-10-21 15:13:51Z knoop $
+! $Id: read_3d_binary.f90 2382 2017-09-01 12:20:53Z basit $
 !
 ! 2031 2016-10-21 15:11:58Z knoop
 ! renamed variable rho_av to rho_ocean_av

@@ -23,7 +23,7 @@
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: init_3d_model.f90 2038 2016-10-26 11:16:56Z knoop $
+! $Id: init_3d_model.f90 2382 2017-09-01 12:20:53Z basit $
 !
 ! 2037 2016-10-26 11:15:40Z knoop
 ! Anelastic approximation implemented

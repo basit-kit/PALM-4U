@@ -23,7 +23,7 @@
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: palm.f90 2159 2017-02-22 18:01:07Z kanani $
+! $Id: palm.f90 2382 2017-09-01 12:20:53Z basit $
 !
 ! 2011 2016-09-19 17:29:57Z kanani
 ! Flag urban_surface is now defined in module control_parameters.

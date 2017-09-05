@@ -24,7 +24,7 @@
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: time_integration.f90 2159 2017-02-22 18:01:07Z kanani $
+! $Id: time_integration.f90 2386 2017-09-04 12:23:03Z basit $
 !
 ! 2050 2016-11-08 15:00:55Z gronemeier
 ! Implement turbulent outflow condition
@@ -309,6 +309,8 @@
 #ifdef KPP_CHEM
     USE kchem_driver,                                                          &
         ONLY:  chem_species, NSPEC, use_kpp_chemistry
+    USE kchem_photolysis,                                                      &
+        ONLY: photolysis_control
 #endif    
     
     USE kinds
@@ -478,6 +480,26 @@
 
           intermediate_timestep_count = intermediate_timestep_count + 1
 
+!--       If required, calculate photolysis frequencies - Why not before the intermediate timestep loop?
+          IF ( intermediate_timestep_count ==  1 ) THEN 
+!         IF ( radiation .AND. intermediate_timestep_count                     &
+!              == intermediate_timestep_count_max .AND. simulated_time >    &
+!              skip_time_do_radiation )  THEN
+!              time_radiation = time_radiation + dt_3d
+!            IF ( time_radiation >= dt_radiation .OR. force_radiation_call )   &
+!            THEN
+!               CALL cpu_log( log_point(50), 'photolysis', 'start' )
+!               IF ( .NOT. force_radiation_call )  THEN
+!                  time_radiation = time_radiation - dt_radiation
+!               ENDIF
+           if(myid==0)   write(06,*) 'Vor photolysis_control',intermediate_timestep_count
+                CALL photolysis_control
+           if(myid==0)   write(06,*) 'Nach photolysis_control'
+
+!               CALL cpu_log( log_point(50), 'photolysis', 'stop' )
+!               ENDIF
+!            ENDIF
+          ENDIF
 !
 !--       Set the steering factors for the prognostic equations which depend
 !--       on the timestep scheme

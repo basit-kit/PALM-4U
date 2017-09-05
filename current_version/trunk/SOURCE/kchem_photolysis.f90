@@ -19,7 +19,17 @@
 !
 ! Current revisions:
 ! -----------------
+! Revision 1.1  2017/08/03 18:46:00  RFo
+! Initial revision
 !
+! Former revisions:
+!------------------
+! $Id: kchem_photolysis.f90 2386 2017-09-04 12:23:03Z basit $
+!
+! Authors:
+! @athor RFo
+!
+!------------------------------------------------------------------------------!
 ! Description:
 ! ------------
 !> photolysis models and interfaces (Adapted from photolysis_model_mod.f90)
@@ -147,7 +157,7 @@
 !          photolysis_header, photolysis_init, photolysis_parin !,                 &
 !          photolysis_define_netcdf_grid, photolysis_last_actions,               &
 !          photolysis_read_restart_data, photolysis_data_output_mask
- !   PUBLIC  photolysis_control
+   PUBLIC  photolysis_control
     
 !
 
