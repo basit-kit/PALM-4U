@@ -14,18 +14,23 @@
 ! You should have received a copy of the GNU General Public License along with
 ! PALM. If not, see <http://www.gnu.org/licenses/>.
 !
-! Copyright 1997-2016 Leibniz Universitaet Hannover
+! Copyright 1997-2017 Leibniz Universitaet Hannover
 !------------------------------------------------------------------------------!
 !
 ! Current revisions:
 ! ------------------
-! kk: Added exchange_horiz for chemical species
-! FKa: Minor formatting
+! 
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: time_integration.f90 2386 2017-09-04 12:23:03Z basit $
+! $Id: time_integration.f90 2425 2017-09-11 14:21:39Z basit $
 !
+! 2419 2017-09-06 16:05:48Z basit
+! renamed kchem_driver to chemistry_model_mod, use_kpp_chemistry to
+! air_chemistry. prep directive 'KPP_CHEM' renamed to '__chem'. 
+! kk: Added exchange_horiz for chemical species
+! FKa: Minor formatting
+! 
 ! 2050 2016-11-08 15:00:55Z gronemeier
 ! Implement turbulent outflow condition
 ! 
@@ -255,8 +260,8 @@
         ONLY:  calc_mean_profile
 
     USE control_parameters,                                                    &
-        ONLY:  advected_distance_x, advected_distance_y, average_count_3d,     &
-               averaging_interval, averaging_interval_pr,                      &
+        ONLY:  advected_distance_x, advected_distance_y, air_chemistry,        &
+               average_count_3d, averaging_interval, averaging_interval_pr,    &
                bc_lr_cyc, bc_ns_cyc, bc_pt_t_val,                              &
                bc_q_t_val, call_psolver_at_all_substeps, cloud_droplets,       &
                cloud_physics, constant_flux_layer, constant_heatflux,          &
@@ -306,10 +311,10 @@
 
     USE interfaces
 
-#ifdef KPP_CHEM
-    USE kchem_driver,                                                          &
-        ONLY:  chem_species, NSPEC, use_kpp_chemistry
-    USE kchem_photolysis,                                                      &
+#if defined( __chem )
+    USE chemistry_model_mod,                                                   &
+        ONLY:  chem_species, nspec 
+    USE chem_photolysis_mod,                                                   & 
         ONLY: photolysis_control
 #endif    
     
@@ -551,7 +556,7 @@
 !--       inlining problems.
 
           IF ( loop_optimization == 'cache' )  THEN
-           if(myid==0)   print*,'**** fm TI, calling prognostic_eqn for CACHE #8.1 '        !bK debug
+!           if(myid==0)   print*,'**** fm TI, calling prognostic_eqn for CACHE #8.1 '        !bK debug
 
              CALL prognostic_equations_cache
           ELSEIF ( loop_optimization == 'vector' )  THEN
@@ -781,11 +786,11 @@
 
 !
 !--          Ghost point exchange for chemical species
-#ifdef KPP_CHEM
-             IF ( use_kpp_chemistry )  THEN
-                if (myid == 0 ) print*,' *** from TI before calling exchange_horiz #17.1 *** '          !bK debug
+#if defined( __chem )
+             IF ( air_chemistry )  THEN
+!                if (myid == 0 ) print*,' *** from TI before calling exchange_horiz #17.1 *** '          !bK debug
                 flush(9)
-                DO  n = 1, NSPEC     
+                DO  n = 1, nspec     
                    CALL exchange_horiz( chem_species(n)%conc_p, nbgp ) 
                 ENDDO
 !                if(myid == 0) print*,' *** from time_integration  after calling exchange_horiz ***  7'          !bK debug
@@ -799,12 +804,12 @@
 !
 !--       Boundary conditions for the prognostic quantities (except of the
 !--       velocities at the outflow in case of a non-cyclic lateral wall)
-          if(myid == 0) print*, 'fm TI, call boundary_conds #18.1'              !bK debug
+!          if(myid == 0) print*, 'fm TI, call boundary_conds #18.1'              !bK debug
           CALL boundary_conds
 
 !
 !--       Swap the time levels in preparation for the next time step.
-          if(myid == 0) print*,'fm TI, calling swap_timelevel #19.1'            !bk debug
+!          if(myid == 0) print*,'fm TI, calling swap_timelevel #19.1'            !bk debug
           CALL swap_timelevel
 
           IF ( nested_run )  THEN

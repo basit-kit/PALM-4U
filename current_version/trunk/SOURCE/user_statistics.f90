@@ -14,7 +14,7 @@
 ! You should have received a copy of the GNU General Public License along with
 ! PALM. If not, see <http://www.gnu.org/licenses/>.
 !
-! Copyright 1997-2016 Leibniz Universitaet Hannover
+! Copyright 1997-2017 Leibniz Universitaet Hannover
 !------------------------------------------------------------------------------!
 !
 ! Current revisions:
@@ -23,8 +23,12 @@
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: user_statistics.f90 2382 2017-09-01 12:20:53Z basit $
+! $Id: user_statistics.f90 2425 2017-09-11 14:21:39Z basit $
 !
+! 2382 2017-09-01 12:20:53Z basit
+! renamed kchem_driver to chemistry_model_mod, prep directive 'KPP_CHEM'
+! renamed as '__chem'.
+! 
 ! 2000 2016-08-20 18:09:15Z knoop
 ! Forced header and separation lines into 80 columns
 ! 
@@ -72,7 +76,7 @@
     USE arrays_3d
     USE indices
     
-    USE kchem_driver, ONLY: chem_species, use_kpp_chemistry, NVAR
+    USE chemistry_model_mod, ONLY: chem_species, NVAR
  
     USE kinds
     

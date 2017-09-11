@@ -14,17 +14,22 @@
 ! You should have received a copy of the GNU General Public License along with
 ! PALM. If not, see <http://www.gnu.org/licenses/>.
 !
-! Copyright 1997-2016 Leibniz Universitaet Hannover
+! Copyright 1997-2017 Leibniz Universitaet Hannover
 !------------------------------------------------------------------------------!
 !
 ! Current revisions:
 ! -----------------
 ! 
-! Initial Version of KPP chemistry
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: parin.f90 2382 2017-09-01 12:20:53Z basit $
+! $Id: parin.f90 2425 2017-09-11 14:21:39Z basit $
+! 
+! 2382 2017-09-01 12:20:53Z basit
+! renamed kchem_driver as chemistry_model_mod, chemistry and use_kpp_chemistry
+! as air_chemistry. prefix 'k' is removed from kchem_* variables and 
+! subroutines. prep directive 'KPP_CHEM' renamed as '__chem'. ! !  
+! Initial Version of KPP chemistry
 ! 
 ! 2050 2016-11-08 15:00:55Z gronemeier
 ! Implement turbulent outflow condition
@@ -313,9 +318,9 @@
     USE wind_turbine_model_mod,                                                &
         ONLY:  wtm_parin
 
-#ifdef KPP_CHEM
-    USE kchem_driver,                                                           &
-        ONLY: kchem_parin
+#if defined( __chem )
+    USE chemistry_model_mod,                                                           &
+        ONLY: chem_parin
 #endif
 
     IMPLICIT NONE
@@ -323,7 +328,7 @@
     INTEGER(iwp) ::  i   !<
 
 
-    NAMELIST /inipar/  alpha_surface, approximation,                           &
+    NAMELIST /inipar/  air_chemistry, alpha_surface, approximation,            &
                        background_communication, bc_e_b, bc_lr,                &
                        bc_ns, bc_p_b, bc_p_t, bc_pt_b, bc_pt_t, bc_q_b,        &
              bc_q_t, bc_rs_b, bc_rs_t, bc_s_b, bc_s_t, bc_sa_t, bc_uv_b, bc_uv_t, &     !bK added bc_rs_b, bc_rs_t
@@ -332,7 +337,7 @@
              call_psolver_at_all_substeps, call_microphysics_at_all_substeps,  &
              canyon_height,                                                    &
              canyon_width_x, canyon_width_y, canyon_wall_left,                 &
-             canyon_wall_south, c_sedimentation, cfl_factor, chemistry, cloud_droplets,   &  !bK added chemistry
+             canyon_wall_south, c_sedimentation, cfl_factor, cloud_droplets,   &  !bK added air_chemistry
              cloud_physics, cloud_scheme, cloud_top_radiation,                 &
              cloud_water_sedimentation,                                        &
              collective_wait, collision_turbulence, conserve_volume_flow,      &
@@ -369,7 +374,8 @@
              sa_vertical_gradient, sa_vertical_gradient_level, scalar_advec,   &
              scalar_rayleigh_damping,                                          &
              statistic_regions, subs_vertical_gradient,                        &
-             subs_vertical_gradient_level, surface_chemistryflux, surface_heatflux, surface_pressure, &     !bK added surface_chemistryflux
+             subs_vertical_gradient_level, surface_chemistryflux,              &
+             surface_heatflux, surface_pressure,                               &     !bK added surface_chemistryflux
              surface_scalarflux, surface_waterflux,                            &
              s_surface, s_surface_initial_change, s_vertical_gradient,         &
              s_vertical_gradient_level, timestep_scheme,                       &
@@ -604,12 +610,12 @@
 !--       Read user-defined variables
           CALL user_parin
 
-#ifdef KPP_CHEM
+#if defined( __chem )
 !
 !--       Read kpp chmistry variables
-          if(myid == 0) print*, 'fm parin, before calling kc_parin #0.1 '       !bK
-          chemistry = .TRUE.   
-          call kchem_parin
+!          if(myid == 0) print*, 'fm parin, before calling kc_parin #0.1 '       !bK
+          air_chemistry = .TRUE.   
+          call chem_parin
 #endif
 !
 !--       Check in case of initial run, if the grid point numbers are well

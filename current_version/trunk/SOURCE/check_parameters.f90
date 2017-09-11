@@ -14,18 +14,24 @@
 ! You should have received a copy of the GNU General Public License along with
 ! PALM. If not, see <http://www.gnu.org/licenses/>.
 !
-! Copyright 1997-2016 Leibniz Universitaet Hannover
+! Copyright 1997-2017 Leibniz Universitaet Hannover
 !------------------------------------------------------------------------------!
 !
 ! Current revisions:
 ! -----------------
-! kk: Added call to chemistry model
-! FKa: Some formatting and setting of additional flags 
+! 
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: check_parameters.f90 2382 2017-09-01 12:20:53Z basit $
+! $Id: check_parameters.f90 2425 2017-09-11 14:21:39Z basit $
 !
+! 2382 2017-09-01 12:20:53Z basit
+! renamed kchem_driver to chemistry_model_mod, use_kpp_chemistry and chemistry
+! to air_chemistry. prefix 'k' is removed from kchem_* variables and
+! subroutines names. prep directive 'KPP_CHEM' renamed as '__chem'. 
+! kk: Added call to chemistry model
+! FKa: Some formatting and setting of additional flags 
+! 
 ! 2052 2016-11-08 15:14:59Z gronemeier
 ! Bugfix: remove setting of default value for recycling_width
 ! 
@@ -476,10 +482,10 @@
         ONLY:  usm_check_data_output, usm_check_parameters
     USE wind_turbine_model_mod,                                                &
         ONLY:  wtm_check_parameters, wind_turbine
-#ifdef KPP_CHEM
-    USE kchem_driver,                                                          &
-        ONLY:  kchem_boundary_conds, kchem_check_data_output,                  &
-               kchem_check_data_output_pr, use_kpp_chemistry 
+#if defined( __chem )
+    USE chemistry_model_mod,                                                   &
+        ONLY:  chem_boundary_conds, chem_check_data_output,                    &
+               chem_check_data_output_pr 
                  
 #endif
 
@@ -1266,7 +1272,7 @@
        IF ( humidity       )  q_init  = q_surface
        IF ( ocean          )  sa_init = sa_surface
        IF ( passive_scalar )  s_init  = s_surface
-       IF ( chemistry )       rs_init = rs_surface      !bK added 
+       IF ( air_chemistry )       rs_init = rs_surface      !bK added 
 !
 !--
 !--    If required, compute initial profile of the geostrophic wind
@@ -1472,7 +1478,7 @@
        ENDIF
 !
 !--    Compute initial chemistry profile using the given chemical species gradients
-       IF ( chemistry )  THEN                                                           !bK added this IF block
+       IF ( air_chemistry )  THEN                                                           !bK added this IF block
           CALL init_vertical_profiles( rs_vertical_gradient_level_ind,          &
                                        rs_vertical_gradient_level,              &
                                        rs_vertical_gradient, rs_init,           &
@@ -1958,9 +1964,9 @@
 
 !
 !-- Boundary conditions for chemical species
-#ifdef KPP_CHEM
+#if defined( __chem )
     if(myid == 0) print*, 'fm check_parameter call kc_boundary_conds #3.1'                     !bk debug
-    IF ( use_kpp_chemistry )  CALL kchem_boundary_conds( 'init' )
+    IF ( air_chemistry )  CALL chem_boundary_conds( 'init' )
 #endif
 
 !
@@ -2989,9 +2995,9 @@
                                                      unit, dopr_unit(i) )
              ENDIF
 
-#ifdef KPP_CHEM
+#if defined( __chem )
              IF ( unit == 'illegal' )  THEN                                         !bK added this block
-                CALL kchem_check_data_output_pr( data_output_pr(i), i,     &
+                CALL chem_check_data_output_pr( data_output_pr(i), i,     &
                                                      unit, dopr_unit(i) )
              ENDIF 
 #endif
@@ -3200,9 +3206,9 @@
              unit = 'conc'
 
           CASE ( 'rs' )                                                                         !bk added this case block
-             IF (  .NOT.  chemistry )  THEN
+             IF (  .NOT.  air_chemistry )  THEN
                 message_string = 'output of "' // TRIM( var ) // '" requi' //  &
-                                 'res chemistry = .TRUE.'
+                                 'res air_chemistry = .TRUE.'
                 CALL message( 'check_parameters', 'PA0110', 1, 2, 0, 6, 0 )                     !bK correct error index PA0110 for chemistry
              ENDIF
              unit = 'ppm'
@@ -3290,11 +3296,11 @@
 !--          Block of chemistry model outputs
 
             print*,'fm #30 print var .... ', var
-#ifdef KPP_CHEM
-             IF ( unit == 'illegal' .AND. use_kpp_chemistry .AND. var(1:3) == 'kc_' )  THEN
-              if(myid == 0)  print*,'fm #30@3295 check_param, call kc_check_data_output #117'               !bK debug
-                CALL kchem_check_data_output( var, unit, i, ilen, k )
-                print*,'fm #30i@3297 aft call kc_check... ', var
+#if defined( __chem )
+             IF ( unit == 'illegal' .AND. air_chemistry .AND. var(1:3) == 'kc_' )  THEN
+!              if(myid == 0)  print*,'fm #30@3295 check_param, call kc_check_data_output #117'               !bK debug
+                CALL chem_check_data_output( var, unit, i, ilen, k )
+!                print*,'fm #30i@3297 aft call kc_check... ', var
 
              ENDIF
 #endif

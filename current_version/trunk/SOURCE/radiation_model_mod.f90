@@ -14,7 +14,7 @@
 ! You should have received a copy of the GNU General Public License along with
 ! PALM. If not, see <http://www.gnu.org/licenses/>.
 !
-! Copyright 1997-2016 Leibniz Universitaet Hannover
+! Copyright 1997-2017 Leibniz Universitaet Hannover
 !------------------------------------------------------------------------------!
 !
 ! Current revisions:
@@ -23,7 +23,7 @@
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: radiation_model_mod.f90 2382 2017-09-01 12:20:53Z basit $
+! $Id: radiation_model_mod.f90 2425 2017-09-11 14:21:39Z basit $
 !
 ! 2011 2016-09-19 17:29:57Z kanani
 ! Removed CALL of auxiliary SUBROUTINE get_usm_info,

@@ -14,18 +14,24 @@
 ! You should have received a copy of the GNU General Public License along with
 ! PALM. If not, see <http://www.gnu.org/licenses/>.
 !
-! Copyright 1997-2016 Leibniz Universitaet Hannover
+! Copyright 1997-2017 Leibniz Universitaet Hannover
 !------------------------------------------------------------------------------!
 !
 ! Current revisions:
 ! ------------------
-! kk: Call to chemistry module added
-! FKa: Minor formatting
+! 
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: netcdf_interface_mod.f90 2159 2017-02-22 18:01:07Z kanani $
+! $Id: netcdf_interface_mod.f90 2425 2017-09-11 14:21:39Z basit $
 !
+! 2159 2017-02-22 18:01:07Z kanani
+! renamed kchem_driver to chemistry_model_mod, use_kpp_chemistry to air_chemistry
+! Prefix 'k' is removed from  kchem_define_netcdf_grid, and prep directive
+! 'KPP_CHEM' renamed as '__chem'.
+! kk: Call to chemistry module added
+! FKa: Minor formatting
+! 
 ! 2040 2016-10-26 16:58:09Z gronemeier
 ! Increased number of possible statistic_regions to 99
 ! 
@@ -423,7 +429,7 @@
         ONLY:  pi
 
     USE control_parameters,                                                    &
-        ONLY:  averaging_interval, averaging_interval_pr,                      &
+        ONLY:  air_chemistry, averaging_interval, averaging_interval_pr,       &
                data_output_pr,  domask,  dopr_n,        &
                dopr_time_count, dopts_time_count, dots_time_count,             &
                do2d, do2d_xz_time_count, do3d,                &
@@ -461,7 +467,8 @@
         ONLY: radiation, radiation_define_netcdf_grid
 
     USE spectra_mod,                                                           &
-        ONLY:  averaging_interval_sp, comp_spectra_level, data_output_sp, dosp_time_count, spectra_direction
+        ONLY:  averaging_interval_sp, comp_spectra_level, data_output_sp,      &
+               dosp_time_count, spectra_direction
 
     USE statistics,                                                            &
         ONLY:  hom, statistic_regions
@@ -469,9 +476,9 @@
     USE urban_surface_mod,                                                     &
         ONLY:  usm_define_netcdf_grid
 
-#ifdef KPP_CHEM
-    USE kchem_driver,                                                          &
-        ONLY:  kchem_define_netcdf_grid, use_kpp_chemistry
+#if defined( __chem )
+    USE chemistry_model_mod,                                                   &
+        ONLY:  chem_define_netcdf_grid 
 #endif
 
     IMPLICIT NONE
@@ -847,9 +854,9 @@
 
 !
 !--                Check for chemistry quantities                   
-#ifdef KPP_CHEM
-                   IF ( .NOT. found  .AND.  use_kpp_chemistry )  THEN
-                      CALL kchem_define_netcdf_grid( domask(mid,av,i),         &
+#if defined( __chem )
+                   IF ( .NOT. found  .AND. air_chemistry )  THEN
+                      CALL chem_define_netcdf_grid( domask(mid,av,i),         &
                                                          found, grid_x, grid_y,&
                                                          grid_z )
                    ENDIF
@@ -1376,11 +1383,11 @@
                                                          grid_z )
                    ENDIF
                    
-#ifdef KPP_CHEM
+#if defined( __chem )
 !
 !--                Check for kpp chemistry quantities
-                   IF ( .NOT. found  .AND.  use_kpp_chemistry )  THEN
-                      CALL kchem_define_netcdf_grid( do3d(av,i),     &
+                   IF ( .NOT. found  .AND.  air_chemistry )  THEN
+                      CALL chem_define_netcdf_grid( do3d(av,i),     &
                                                          found, grid_x, grid_y,&
                                                          grid_z )
                    ENDIF
@@ -1998,11 +2005,11 @@
                                                           grid_z )
                          ENDIF
 
-#ifdef KPP_CHEM
+#if defined( __chem )
 !
 !--                     Check for kpp chemistry quantities
-                        IF ( .NOT. found  .AND.  use_kpp_chemistry )  THEN
-                           CALL kchem_define_netcdf_grid( do2d(av,i),     &
+                        IF ( .NOT. found  .AND.  air_chemistry )  THEN
+                           CALL chem_define_netcdf_grid( do2d(av,i),     &
                                                                found, grid_x, grid_y,&
                                                                grid_z )
                         ENDIF
@@ -2670,11 +2677,11 @@
                                                        grid_x, grid_y, grid_z )
                       ENDIF
 
-#ifdef KPP_CHEM
+#if defined( __chem )
 !
 !--                    Check for kpp chemistry quantities
-                       IF ( .NOT. found  .AND.  use_kpp_chemistry )  THEN
-                          CALL kchem_define_netcdf_grid( do2d(av,i),     &
+                       IF ( .NOT. found  .AND.  air_chemistry )  THEN
+                          CALL chem_define_netcdf_grid( do2d(av,i),     &
                                                             found, grid_x, grid_y,&
                                                             grid_z )
                       ENDIF
@@ -3326,11 +3333,11 @@
                                                             grid_z )
                       ENDIF
 
-#ifdef KPP_CHEM
+#if defined( __chem )
 !
 !--                   Check for kpp chemistry quantities
-                      IF ( .NOT. found  .AND.  use_kpp_chemistry )  THEN
-                        CALL kchem_define_netcdf_grid( do2d(av,i),     &
+                      IF ( .NOT. found  .AND.  air_chemistry )  THEN
+                        CALL chem_define_netcdf_grid( do2d(av,i),     &
                                                          found, grid_x, grid_y,&
                                                          grid_z )
                       ENDIF

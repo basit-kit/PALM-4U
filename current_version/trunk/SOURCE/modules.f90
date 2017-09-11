@@ -14,7 +14,7 @@
 ! You should have received a copy of the GNU General Public License along with
 ! PALM. If not, see <http://www.gnu.org/licenses/>.
 !
-! Copyright 1997-2016 Leibniz Universitaet Hannover
+! Copyright 1997-2017 Leibniz Universitaet Hannover
 !------------------------------------------------------------------------------!
 !
 ! Current revisions:
@@ -23,8 +23,11 @@
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: modules.f90 2382 2017-09-01 12:20:53Z basit $
+! $Id: modules.f90 2425 2017-09-11 14:21:39Z basit $
 !
+! 2382 2017-09-01 12:20:53Z basit
+! renamed 'chemistry' as 'air_chemistry' 
+! 
 ! 2050 2016-11-08 15:00:55Z gronemeier
 ! Implement turbulent outflow condition
 ! 
@@ -497,7 +500,7 @@
           vpt, w, w_p
 #endif
 
-#ifdef KPP_CHEM
+#if defined( __chem )
     REAL(wp), DIMENSION(:,:,:), POINTER ::      rs_p, rs, trs_m                       !bK added pointer arrays  copies addresses
                                                                                         ! from pointer array s_p, s and ts_m
  
@@ -793,7 +796,7 @@
     LOGICAL ::  neutral = .FALSE., nudging = .FALSE., &
                 ocean = .FALSE., on_device = .FALSE., &
                 outflow_l = .FALSE., outflow_n = .FALSE., outflow_r = .FALSE., &
-                outflow_s = .FALSE., passive_scalar = .FALSE., chemistry = .FALSE., &       ! bK added reactive_scalar
+                outflow_s = .FALSE., passive_scalar = .FALSE., air_chemistry = .FALSE., &       ! bK added reactive_scalar
                 precipitation = .FALSE., &
                 random_heatflux = .FALSE., recycling_yshift = .FALSE.,&
                 run_control_header = .FALSE., run_coupled = .TRUE., &
@@ -1353,7 +1356,7 @@
     REAL(wp), DIMENSION(:,:,:), ALLOCATABLE   ::  hom_sum, rmask, sums_l,      &
                                                   sums_l_l, sums_up_fraction_l
 
-    REAL(wp), DIMENSION(:,:,:,:), ALLOCATABLE ::  hom, hom_kchem
+    REAL(wp), DIMENSION(:,:,:,:), ALLOCATABLE ::  hom, hom_chem
 
     SAVE
 

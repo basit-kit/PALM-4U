@@ -14,18 +14,24 @@
 ! You should have received a copy of the GNU General Public License along with
 ! PALM. If not, see <http://www.gnu.org/licenses/>.
 !
-! Copyright 1997-2016 Leibniz Universitaet Hannover
+! Copyright 1997-2017 Leibniz Universitaet Hannover
 !------------------------------------------------------------------------------!
 !
 ! Current revisions:
 ! -----------------
-! kk: Added call to chemistry model
-! FKa: Minor formatting
+! 
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: swap_timelevel.f90 2159 2017-02-22 18:01:07Z kanani $
+! $Id: swap_timelevel.f90 2425 2017-09-11 14:21:39Z basit $
 !
+! 2159 2017-02-22 18:01:07Z kanani
+! renamed kchem_driver to chemistry_model_mod, use_kpp_chemistry to
+! air_chemistry. prefix 'k' is removed from kchem_swap_timelevel, and
+! prep directive 'KPP_CHEM' renamed to '__chem'. 
+! kk: Added call to chemistry model
+! FKa: Minor formatting
+! 
 ! 2011 2016-09-19 17:29:57Z kanani
 ! Flag urban_surface is now defined in module control_parameters.
 ! 
@@ -114,7 +120,7 @@
         ONLY: cpu_log, log_point
 
     USE control_parameters,                                                    &
-        ONLY:  cloud_physics, constant_diffusion, humidity,                    &
+        ONLY:  air_chemistry, cloud_physics, constant_diffusion, humidity,     &
                microphysics_seifert, neutral, ocean, passive_scalar,           &
                timestep_count, urban_surface
 
@@ -127,9 +133,9 @@
     USE urban_surface_mod,                                                     &
         ONLY:  usm_swap_timelevel
 
-#ifdef KPP_CHEM
-    USE kchem_driver,                                                          &
-        ONLY: kchem_swap_timelevel, use_kpp_chemistry
+#if defined( __chem )
+    USE chemistry_model_mod,                                                    &
+        ONLY: chem_swap_timelevel 
 #endif
 
     IMPLICIT NONE
@@ -232,8 +238,8 @@
              s => s_1;    s_p => s_2
           ENDIF
 
-#ifdef KPP_CHEM
-          IF ( use_kpp_chemistry )  CALL kchem_swap_timelevel(0)
+#if defined( __chem )
+          IF ( air_chemistry )  CALL chem_swap_timelevel(0)
 #endif
 
           swap_level = 1
@@ -263,8 +269,8 @@
              s => s_2;    s_p => s_1
           ENDIF
 
-#ifdef KPP_CHEM
-          IF ( use_kpp_chemistry )  CALL kchem_swap_timelevel(1)
+#if defined( __chem )
+          IF ( air_chemistry )  CALL chem_swap_timelevel(1)
 #endif
 
           swap_level = 2

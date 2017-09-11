@@ -14,17 +14,23 @@
 ! You should have received a copy of the GNU General Public License along with
 ! PALM. If not, see <http://www.gnu.org/licenses/>.
 !
-! Copyright 1997-2016 Leibniz Universitaet Hannover
+! Copyright 1997-2017 Leibniz Universitaet Hannover
 !------------------------------------------------------------------------------!
 !
 ! Current revisions:
 ! -----------------
-! kk: Added call to chemistry model
+! 
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: palm.f90 2382 2017-09-01 12:20:53Z basit $
+! $Id: palm.f90 2425 2017-09-11 14:21:39Z basit $
 !
+! 2382 2017-09-01 12:20:53Z basit
+! renamed kchem_driver as chemistry_model_mod, use_kpp_chemistry as
+! air_chemistry. prefix 'k' is removed from other kchem variables 
+! subroutine names. prep directive 'KPP_CHEM' renamed as '__chem'. 
+! kk: Added call to chemistry model
+
 ! 2011 2016-09-19 17:29:57Z kanani
 ! Flag urban_surface is now defined in module control_parameters.
 ! 
@@ -157,8 +163,9 @@
     USE arrays_3d
 
     USE control_parameters,                                                    &
-        ONLY:  constant_diffusion, coupling_char, coupling_mode,               &
-               do2d_at_begin, do3d_at_begin, humidity, initializing_actions, io_blocks, io_group,    &
+        ONLY:  air_chemistry, constant_diffusion, coupling_char,               &
+               coupling_mode, do2d_at_begin, do3d_at_begin, humidity,          &
+               initializing_actions, io_blocks, io_group,                      &
                large_scale_forcing, message_string, nest_domain, neutral,      &
                nudging, passive_scalar, simulated_time, simulated_time_chr,    &
                urban_surface,                                                  &
@@ -180,9 +187,9 @@
                nzb_w_outer, rflags_invers, rflags_s_inner, wall_flags_0,       &
                wall_flags_00
 
-#ifdef KPP_CHEM
-    USE kchem_driver,                                                          &
-        ONLY:  kchem_initialize, use_kpp_chemistry, kchem_last_actions
+#if defined( __chem )
+    USE chemistry_model_mod,                                                          &
+        ONLY:  chem_initialize, chem_last_actions
 #endif
 
     USE kinds
@@ -335,7 +342,7 @@
 
 !
 !-- Read control parameters from NAMELIST files and read environment-variables
-    if(myid == 0) print*,'fm palm, call parin #-1.1'        !bK debug
+!    if(myid == 0) print*,'fm palm, call parin #-1.1'        !bK debug
     CALL parin
 
 !
@@ -371,17 +378,17 @@
 
 !
 !-- Initialize chemistry (called before check_parameters due to dependencies)
-#ifdef KPP_CHEM
-    if(myid == 0) print*,'fm palm, kc_initialize #1.1 '                 !bK debug
+#if defined( __chem )
+!    if(myid == 0) print*,'fm palm, kc_initialize #1.1 '                 !bK debug
 ! IF (  TRIM( initializing_actions ) /= 'read_restart_data' )  THEN
-    IF ( use_kpp_chemistry )  CALL kchem_initialize
+    IF ( air_chemistry )  CALL chem_initialize
 
 ! END IF
 
 #endif
 !
 !-- Check control parameters and deduce further quantities
-    if (myid== 0) print*,'fm palm, call checm_arameters #2.1'           !bK debug
+!    if (myid== 0) print*,'fm palm, call checm_arameters #2.1'           !bK debug
     CALL check_parameters
 
 !
@@ -436,7 +443,7 @@
     ENDIF
 
     IF ( do3d_at_begin )  THEN
-       if (myid == 0) print*,'fm palm, call data_output_3d #5.1'         !bK debug
+!       if (myid == 0) print*,'fm palm, call data_output_3d #5.1'         !bK debug
        CALL data_output_3d( 0 )
     ENDIF
 
@@ -454,7 +461,7 @@
     !$acc       copyin( weight_pres, weight_substep )
 !
 !-- Integration of the model equations using timestep-scheme
-    if(myid == 0) print*,'fm palm, call TI #7.1'                !bK debug
+!    if(myid == 0) print*,'fm palm, call TI #7.1'                !bK debug
     CALL time_integration
 
 !
@@ -510,11 +517,11 @@
           IF ( radiation )  THEN
              CALL radiation_last_actions
           ENDIF
-#ifdef KPP_CHEM
-!          IF ( use_kpp_chemistry ) THEN
-            print*,'fm #00@510  fm palm bef call kchem_last_actions '
-             CALL kchem_last_actions
-            print*,'fm #00@513  fm palm aft call kchem_last_actions, i is .. ',i
+#if defined( __chem )
+!          IF ( air_chemistry ) THEN
+            print*,'fm #00@510  fm palm bef call chem_last_actions '
+             CALL chem_last_actions
+            print*,'fm #00@513  fm palm aft call chem_last_actions, i is .. ',i
 
 !          END IF
 #endif

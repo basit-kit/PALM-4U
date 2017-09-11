@@ -14,21 +14,27 @@
 ! You should have received a copy of the GNU General Public License along with
 ! PALM. If not, see <http://www.gnu.org/licenses/>.
 !
-! Copyright 1997-2016 Leibniz Universitaet Hannover
+! Copyright 1997-2017 Leibniz Universitaet Hannover
 !------------------------------------------------------------------------------!
 !
 ! Current revisions:
 ! ------------------
+! 
+! 
+! Former revisions:
+! -----------------
+! $Id: prognostic_equations.f90 2425 2017-09-11 14:21:39Z basit $
+!
+! 2419 2017-09-06 16:05:48Z basit
+! renamed kchem_driver to chemistry_model_mod, use_kpp_chemistry to
+! air_chemistry. prefix 'k' is removed from other chem variables
+! and subroutine names. KPP_CHEM prep directive replaced with __chem.
 ! kk: Added chemistry calculations
 ! bK: Added missing initialization of s_init (tendency_caller)
 ! FKa: Bugfix concerning exchange of ghost points after chemical reactions
 !      (separate loop now)
 ! FKa: nbgp added to ONLY list, minor formatting, added some cpu log_points
 ! 
-! Former revisions:
-! -----------------
-! $Id: prognostic_equations.f90 2382 2017-09-01 12:20:53Z basit $
-!
 ! 2031 2016-10-21 15:11:58Z knoop
 ! renamed variable rho to rho_ocean
 ! 
@@ -234,7 +240,7 @@
                tw_m, u, ug, u_init, u_p, v, vg, vpt, v_init, v_p, w, w_p
         
     USE control_parameters,                                                    &
-        ONLY:  call_microphysics_at_all_substeps, chemistry, cloud_physics,    &        ! bK added chemistry
+        ONLY:  air_chemistry, call_microphysics_at_all_substeps, cloud_physics, &        ! bK added air_chemistry
                cloud_top_radiation, constant_diffusion, dp_external,           &
                dp_level_ind_b, dp_smooth_factor, dpdxy, dt_3d, humidity,       &
                inflow_l, intermediate_timestep_count,                          &
@@ -353,10 +359,10 @@
     USE wind_turbine_model_mod,                                                &
         ONLY:  wind_turbine, wtm_tendencies
 
-#ifdef KPP_CHEM
-    USE kchem_driver,                                                          &
-        ONLY: chem_species, kchem_integrate, NSPEC, NVAR,                      &   !bK NVAR, SPC_NAMES added bk pe1
-              use_kpp_chemistry, SPC_NAMES, call_kpp_at_all_substeps               ! RFo call_kpp_at_all_substeps added
+#if defined( __chem )
+    USE chemistry_model_mod,                                                          &
+        ONLY: chem_species, chem_integrate, nspec, NVAR,                      &   !bK NVAR, SPC_NAMES added bk pe1
+              SPC_NAMES, call_kpp_at_all_substeps               ! RFo call_kpp_at_all_substeps added
     USE arrays_3d,                                                             &   !bK added moduel arrays_3d  
         ONLY: rssws, rsswst, rs_p, rs,trs_m
 
@@ -419,31 +425,31 @@
 !-- Calculation of chemical reactions. This is done outside of main loop,
 !-- since exchange of ghost points is required after this update of the
 !-- concentrations of chemical species                                    
-#ifdef KPP_CHEM
-    IF ( use_kpp_chemistry )  THEN
+#if defined( __chem )
+    IF ( air_chemistry )  THEN
        CALL cpu_log( log_point(32), 'all progn.equations', 'pause' )
        CALL cpu_log( log_point_s(82), 'chemistry reactions ', 'start' )
 
-!     print*,'*** fm prong_eqn BEFORE calling kchem_integrate *** '       !bK debug
+!     print*,'*** fm prong_eqn BEFORE calling chem_integrate *** '       !bK debug
      
        DO  i = nxl, nxr
           DO  j = nys, nyn
-!         if(myid == 0) print*,'fm prong_eqn AFTER calling kchem_integrate    #9.1 '       !bK debug
+!         if(myid == 0) print*,'fm prong_eqn AFTER calling chem_integrate    #9.1 '       !bK debug
           if( i == 10 .and. j == 10)  then     ! -> RFo
              write(06,*) 'intermediate_timestep_count= ', intermediate_timestep_count
-             write(06,*) 'vor kchem_integrate'
-             DO n=1,NSPEC
+             write(06,*) 'vor chem_integrate'
+             DO n=1,nspec
 !            write(06,*) chem_species(n)%conc_p( i, j,1), chem_species(n)%conc( i, j,1), chem_species(n)%tconc_m( i, j,1)
              ENDDO
             endif
 
              IF ( intermediate_timestep_count == 1 .OR. call_kpp_at_all_substeps ) THEN  ! RFo
-             CALL kchem_integrate (i,j)                                                
+             CALL chem_integrate (i,j)                                                
              ENDIF
 
           if( i == 10 .and. j == 10)  then
-           write(06,*) 'nach kchem_integrate'
-           DO n=1,NSPEC
+           write(06,*) 'nach chem_integrate'
+           DO n=1,nspec
 !          write(06,*) chem_species(n)%conc_p( i, j,1), chem_species(n)%conc( i, j,1), chem_species(n)%tconc_m( i, j,1)
            ENDDO
           endif    ! <- RFo
@@ -453,7 +459,7 @@
 
        CALL cpu_log( log_point_s(84), 'chemistry exch-horiz ', 'start' )
 !--    Loop over chemical species       
-       DO  n = 1, NSPEC
+       DO  n = 1, nspec
           CALL exchange_horiz( chem_species(n)%conc, nbgp )                        
        ENDDO
        CALL cpu_log( log_point_s(84), 'chemistry exch-horiz ', 'stop' )
@@ -1128,14 +1134,14 @@
 
           ENDIF   ! TKE equation
 
-#ifdef KPP_CHEM
-          IF ( use_kpp_chemistry )  THEN
+#if defined( __chem )
+          IF ( air_chemistry )  THEN
              CALL cpu_log( log_point(32), 'all progn.equations', 'pause' )  
              CALL cpu_log( log_point_s(83), 'chemistry advec+diff+prog ', 'start' )
                                          
     
 !--          Loop over chemical species
-             DO  n = 1,NVAR                        ! NSPEC by NVAR bk pe2 
+             DO  n = 1,NVAR                        ! nspec by NVAR bk pe2 
 !                if(myid == 0  ) print*, 'fm prog_eqn, BEFORE calling tendency_caller #14.1 '  !bK debug
                 
                 CALL tendency_caller ( chem_species(n)%conc_p, chem_species(n)%conc,   &
@@ -2980,12 +2986,12 @@
           CALL advec_s_ws( i, j, rscalar, 'kc', flux_s, diss_s,           &
              flux_l, diss_l, i_omp_start, tn )
        ELSE
-        if(myid == 0) print*,'before advec_s_pw'       !bK debug 
+!        if(myid == 0) print*,'before advec_s_pw'       !bK debug 
           CALL advec_s_pw( i, j, rscalar )
        ENDIF
     ELSE
         if(myid == 0) print*,'before advec_s_up'       !bK debug 
-       CALL advec_s_up( i, j, rscalar )
+!       CALL advec_s_up( i, j, rscalar )
     ENDIF
 
 !

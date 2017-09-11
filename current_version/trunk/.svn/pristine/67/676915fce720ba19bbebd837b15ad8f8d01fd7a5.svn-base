@@ -38,8 +38,8 @@
 !>       D3_coding_standard.pdf under https://palm.muk.uni-hannover.de/trac/downloads/16)
 !> @todo Rename ssws, sswst to csws, cswst to avoid confusion with ssws/sswst 
 !>       used together with passive scalar s
-!> @todo Use same run index for all loops over NSPEC, e.g. nsp = 1, NSPEC
-!>       (and: NSPEC-->nspec, i.e. no capital letters in variable names 
+!> @todo Use same run index for all loops over nspec, e.g. nsp = 1, nspec
+!>       (and: nspec-->nspec, i.e. no capital letters in variable names 
 !>       [see formatting rules])
 !> @todo "#ifdef KPP_CHEM" --> "#if defined( __chem)" (see other examples 
 !>       in PALM)               #if defined( __parallel )
@@ -68,7 +68,7 @@ MODULE kchem_driver
    USE pegrid,             ONLY: myid, threads_per_task
    USE control_parameters, ONLY: dt_3d, ws_scheme_sca, initializing_actions  !ws_sch... added by bK
    USE arrays_3d,          ONLY: pt, hyp    !RFo added hyp   
-   USE kchem_kpp,          ONLY: NSPEC, SPC_NAMES, NKPPCTRL, NMAXFIXSTEPS, t_steps, FILL_TEMP, kpp_integrate,     &
+   USE kchem_kpp,          ONLY: nspec, SPC_NAMES, NKPPCTRL, NMAXFIXSTEPS, t_steps, FILL_TEMP, kpp_integrate,     &
                                  NVAR, ATOL, RTOL, NPHOT, phot_names
    USE cpulog,             ONLY: cpu_log, log_point_s
 
@@ -125,7 +125,7 @@ MODULE kchem_driver
    TYPE(species_av_def),ALLOCATABLE,DIMENSION(:),TARGET, PUBLIC     :: chem_species_av
 !-------------------
 
-   PUBLIC NSPEC
+   PUBLIC nspec
    PUBLIC NVAR       ! added NVAR for pe  bK, kd3
    PUBLIC SPC_NAMES  ! added for pe bk, kd4
 
@@ -335,13 +335,13 @@ MODULE kchem_driver
 
 !--   Allocate Memory for chemical species
 
-      ALLOCATE(chem_species(NSPEC))
-      ALLOCATE(spec_conc_1(nzb:nzt+1,nysg:nyng,nxlg:nxrg,NSPEC))
-      ALLOCATE(spec_conc_2(nzb:nzt+1,nysg:nyng,nxlg:nxrg,NSPEC))
-      ALLOCATE(spec_conc_3(nzb:nzt+1,nysg:nyng,nxlg:nxrg,NSPEC))
+      ALLOCATE(chem_species(nspec))
+      ALLOCATE(spec_conc_1(nzb:nzt+1,nysg:nyng,nxlg:nxrg,nspec))
+      ALLOCATE(spec_conc_2(nzb:nzt+1,nysg:nyng,nxlg:nxrg,nspec))
+      ALLOCATE(spec_conc_3(nzb:nzt+1,nysg:nyng,nxlg:nxrg,nspec))
 
-      ALLOCATE(chem_species_av(NSPEC))          !bK added
-      ALLOCATE(spec_conc_av(nzb:nzt+1,nysg:nyng,nxlg:nxrg,NSPEC)) 
+      ALLOCATE(chem_species_av(nspec))          !bK added
+      ALLOCATE(spec_conc_av(nzb:nzt+1,nysg:nyng,nxlg:nxrg,nspec)) 
 
       ALLOCATE(phot_frequen(NPHOT))                               !RFo
       ALLOCATE(freq_1(nzb:nzt+1,nysg:nyng,nxlg:nxrg,NPHOT))
@@ -351,7 +351,7 @@ MODULE kchem_driver
          write(6,'(/,a,/)')  'kpp chemics >>>> List of species: '
       end if
 
-      do i=1,NSPEC
+      do i=1,nspec
          chem_species(i)%name = SPC_NAMES(i)
          chem_species_av(i)%name = SPC_NAMES(i)                !bK added
 
@@ -416,7 +416,7 @@ MODULE kchem_driver
          end if
 
 !        Default values are taken from smog.def from supplied kpp example
-         do i=1,NSPEC
+         do i=1,nspec
             if(trim(chem_species(i)%name) == 'NO')   then
 !              chem_species(i)%conc = 8.725*1.0E+08
                chem_species(i)%conc = 0.05_wp                           !added by bK
@@ -538,7 +538,7 @@ MODULE kchem_driver
 !--   local variables
       INTEGER                  :: k,m,istatf      ! RFo added f on order to locate istat more easily
       INTEGER,dimension(20)    :: istatus
-      REAL(kind=wp),dimension(nzb_s_inner(j,i)+1:nzt,NSPEC)                :: tmp_conc           
+      REAL(kind=wp),dimension(nzb_s_inner(j,i)+1:nzt,nspec)                :: tmp_conc           
       REAL(kind=wp),dimension(nzb_s_inner(j,i)+1:nzt)                      :: tmp_temp
       REAL(kind=wp),dimension(nzb_s_inner(j,i)+1:nzt,NPHOT)                :: tmp_phot
       REAL(kind=wp),dimension(nzb_s_inner(j,i)+1:nzt)                      :: tmp_fact   !! RFo
@@ -551,7 +551,7 @@ MODULE kchem_driver
        CALL fill_temp (istatf, tmp_temp)                             ! Load constant temperature into kpp context
 !      CALL fill_temp (istatf, pt(nzb_s_inner(j,i)+1:nzt,j,i))                             ! Load temperature into kpp context
 
-      do m=1,NSPEC
+      do m=1,nspec
          tmp_conc(:,m) = chem_species(m)%conc (nzb_s_inner(j,i)+1:nzt,j,i) * tmp_fact(:) ! RFo
       end do
 
@@ -592,7 +592,7 @@ MODULE kchem_driver
 
       CALL cpu_log( log_point_s(80), 'kpp_integrate', 'stop' )
 
-      do m=1,NSPEC
+      do m=1,nspec
          chem_species(m)%conc (nzb_s_inner(j,i)+1:nzt,j,i) = tmp_conc(:,m) / tmp_fact(:)  ! RFo
       end do
 
@@ -614,12 +614,12 @@ MODULE kchem_driver
 
 !        print*,' *** entering kchem_swap_timelevel ***) '
       if(level == 0)  then
-         do i=1,NVAR                                        ! NSPEC replaced with NVAR bK kd1  
+         do i=1,NVAR                                        ! nspec replaced with NVAR bK kd1  
             chem_species(i)%conc(nzb:nzt+1,nysg:nyng,nxlg:nxrg)    => spec_conc_1(:,:,:,i)
             chem_species(i)%conc_p(nzb:nzt+1,nysg:nyng,nxlg:nxrg)  => spec_conc_2(:,:,:,i)
          end do
       else
-         do i=1,NVAR                                        ! NSPEC replaced with NVAR bk  kd2
+         do i=1,NVAR                                        ! nspec replaced with NVAR bk  kd2
             chem_species(i)%conc(nzb:nzt+1,nysg:nyng,nxlg:nxrg)    => spec_conc_2(:,:,:,i)
             chem_species(i)%conc_p(nzb:nzt+1,nysg:nyng,nxlg:nxrg)  => spec_conc_1(:,:,:,i)
          end do
@@ -688,7 +688,7 @@ MODULE kchem_driver
 
 !     if(myid == 0) print*,'fm #117@624 kc_check_data_output, var  = ', spec_name 
 
-      do n=1,NSPEC
+      do n=1,nspec
          if(TRIM(spec_name) == TRIM(chem_species(n)%name))   Then
             unit = 'ppm'
 !           if(myid == 0) print*,'fm #117@629 inside loop prnt spec_name  ',spec_name
@@ -745,7 +745,7 @@ MODULE kchem_driver
                           'lemented for chemistry = .FALSE.'
 !                CALL message( 'check_parameters', 'PA0185', 1, 2, 0, 6, 0 )
             ELSE
-                do n = 1, NSPEC
+                do n = 1, nspec
                     IF (TRIM( spec_name ) == TRIM( chem_species(n)%name ) ) THEN 
                         dopr_index(var_count) = 900 
                         dopr_unit  = 'ppm'
@@ -788,7 +788,7 @@ MODULE kchem_driver
 
 !av == 0
 
-      do n=1,NSPEC
+      do n=1,nspec
          if(TRIM(spec_name) == TRIM(chem_species(n)%name))   Then
             write(6,*) 'Output of species ',TRIM(variable),' ',TRIM(chem_species(n)%name)       !bK print output on screen
             
@@ -851,10 +851,10 @@ MODULE kchem_driver
   
    IF ( mode == 'allocate' )  THEN
  
-        DO nn = 1, NSPEC
+        DO nn = 1, nspec
            IF (TRIM(variable(4:)) == TRIM(chem_species(nn)%name)) THEN
                 kc_idx = nn 
-!                ALLOCAqE(spec_conc_av(nzb:nzt+1,nysg:nyng,nxlg:nxrg,NSPEC))
+!                ALLOCAqE(spec_conc_av(nzb:nzt+1,nysg:nyng,nxlg:nxrg,nspec))
                   chem_species_av(nn)%conc_av = 0.0_wp
                 if(myid == 0) write(9,*) 'the kc_dix fm allocate is ', kc_idx,' ..and variable is .. ', variable
 
@@ -864,10 +864,10 @@ MODULE kchem_driver
 
    ELSEIF ( mode == 'sum' )  THEN
    
-        DO nn = 1, NSPEC
+        DO nn = 1, nspec
            IF (TRIM(variable(4:)) == TRIM(chem_species(nn)%name)) THEN
                 kc_idx = nn 
-!                ALLOCATE(spec_conc_av(nzb:nzt+1,nysg:nyng,nxlg:nxrg,NSPEC))
+!                ALLOCATE(spec_conc_av(nzb:nzt+1,nysg:nyng,nxlg:nxrg,nspec))
         !         chem_species_av(nn)%conc_av = 0.0_wp
                 if(myid == 0) write(9,*) 'the kc_dix fm sum is ', kc_idx,' ..and variable is .. ', variable
                 flush(9)
@@ -885,10 +885,10 @@ MODULE kchem_driver
  
 
    ELSEIF ( mode == 'average' )  THEN
-        DO nn = 1, NSPEC
+        DO nn = 1, nspec
            IF (TRIM(variable(4:)) == TRIM(chem_species(nn)%name)) THEN
                 kc_idx = nn 
-!                ALLOCATE(spec_conc_av(nzb:nzt+1,nysg:nyng,nxlg:nxrg,NSPEC))
+!                ALLOCATE(spec_conc_av(nzb:nzt+1,nysg:nyng,nxlg:nxrg,nspec))
         !         chem_species_av(nn)%conc_av = 0.0_wp
                 if(myid == 0) write(9,*) 'the kc_dix fm average is ', kc_idx,' ..and variable is .. ', variable
 
@@ -934,7 +934,7 @@ MODULE kchem_driver
 !  print*,'fm #110@862 write_binary =  ', write_binary
   
    IF ( write_binary(1:4) == 'true' )  THEN
-   DO kc_n = 1, NSPEC
+   DO kc_n = 1, nspec
 !
       chems_name = chem_species(kc_n)%name
 !
@@ -1026,7 +1026,7 @@ MODULE kchem_driver
 
 
 
-             DO kc_n = 1, NSPEC
+             DO kc_n = 1, nspec
 !                if(myid==0) print*,'fm 110@974 kchem_restart_data ',field_char
                 IF (TRIM( field_char ) == TRIM(chem_species(kc_n)%name) )  THEN
 

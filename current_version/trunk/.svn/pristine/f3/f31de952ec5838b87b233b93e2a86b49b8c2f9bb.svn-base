@@ -1,4 +1,4 @@
-!> @file photolysis_model_mod.f90
+!> @file chem_photolysis_mod.f90
 !------------------------------------------------------------------------------!
 ! This file is part of PALM.
 !
@@ -14,20 +14,26 @@
 ! You should have received a copy of the GNU General Public License along with
 ! PALM. If not, see <http://www.gnu.org/licenses/>.
 !
-! Copyright 1997-2016 Leibniz Universitaet Hannover
+! Copyright 1997-2017 Leibniz Universitaet Hannover
 !------------------------------------------------------------------------------!
 !
 ! Current revisions:
 ! -----------------
-! Revision 1.1  2017/08/03 18:46:00  RFo
-! Initial revision
-!
+! 
+! 
 ! Former revisions:
 !------------------
-! $Id: kchem_photolysis.f90 2386 2017-09-04 12:23:03Z basit $
+! $Id$
+!
+! 2386 2017-09-04 12:23:03Z basit
+! renamed kchem_driver to chemistry_model_mod, kchem_kpp to chem_gasphase_mod and
+! kchem_photolysis to chem_photolysis_mod.
+!
+! Revision 1.1  2017/08/03 18:46:00  RFo
+! Initial revision!
 !
 ! Authors:
-! @athor RFo
+! @athor Renate Forkel
 !
 !------------------------------------------------------------------------------!
 ! Description:
@@ -35,7 +41,7 @@
 !> photolysis models and interfaces (Adapted from photolysis_model_mod.f90)
 !> @todo Alles!
 !------------------------------------------------------------------------------!
- MODULE kchem_photolysis
+ MODULE chem_photolysis_mod
  
     USE arrays_3d,                                                             &
         ONLY:  dzw, hyp, pt, q, ql, zu, zw
@@ -61,10 +67,10 @@
 !              large_scale_forcing, lsf_surf, phi, pt_surface, rho_surface,    &
 !              surface_pressure, time_since_reference_point
 
-    USE kchem_kpp,                                                             &
+    USE chem_gasphase_mod,                                                             &
         ONLY: nphot, phot_names, phot 
 
-    USE kchem_driver,                                                          &
+    USE chemistry_model_mod,                                                          &
         ONLY: phot_frequen
 
 !   REAL(wp), DIMENSION(0:0) ::  zenith,         & !< cosine of solar zenith angle
@@ -310,4 +316,4 @@
     END SUBROUTINE photolysis_constant
 
 !
- END MODULE kchem_photolysis
+ END MODULE chem_photolysis_mod

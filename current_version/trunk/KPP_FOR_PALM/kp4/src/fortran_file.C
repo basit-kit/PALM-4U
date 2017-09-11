@@ -59,6 +59,12 @@ void fortran_file::read () {
        global_substitute(line,"e+ ","e+");
        global_substitute(line,"E+ ","E+");
        global_substitute(line,"E- ","E-");
+       global_substitute(line," NSPEC "," nspec ");            //bK added formatting for palm
+	   global_substitute(line," NVAR "," nvar ");            //bK added formatting for palm
+       global_substitute(line,"(NVAR ","(nvar ");            //bK added formatting for palm
+       global_substitute(line,",NVAR ","(nvar ");            //bK added formatting for palm
+//       global_substitute(line,"PUBLIC :: NVAR","PUBLIC :: nvar");
+
      }
 
      pl.set_line(line);

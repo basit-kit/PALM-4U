@@ -14,18 +14,24 @@
 ! You should have received a copy of the GNU General Public License along with
 ! PALM. If not, see <http://www.gnu.org/licenses/>.
 !
-! Copyright 1997-2016 Leibniz Universitaet Hannover
+! Copyright 1997-2017 Leibniz Universitaet Hannover
 !------------------------------------------------------------------------------!
 !
 ! Current revisions:
 ! ------------------
-! kk: Added call to chemistry model
-! FKa: Some formatting and setting of flag use_kpp_chemistry
+! 
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: data_output_3d.f90 2382 2017-09-01 12:20:53Z basit $
+! $Id: data_output_3d.f90 2425 2017-09-11 14:21:39Z basit $
 !
+! 2382 2017-09-01 12:20:53Z basit
+! renamed kchem_driver as chemistry_model_mod, use_kpp_chemistry as
+! air_chemistry. prefix 'k' is removed from chem vars and
+! subroutine names. KPP_CHEM prep directive replaced with __chem.
+! kk: Added call to chemistry model
+! FKa: Some formatting and setting of flag use_kpp_chemistry
+! 
 ! 2031 2016-10-21 15:11:58Z knoop
 ! renamed variable rho to rho_ocean and rho_av to rho_ocean_av
 ! 
@@ -158,8 +164,8 @@
         ONLY:  l_d_cp, pt_d_t
         
     USE control_parameters,                                                    &
-        ONLY:  cloud_physics, do3d, do3d_no, do3d_time_count, io_blocks,       &
-               io_group, message_string, ntdim_3d, nz_do3d, psolver,           &
+        ONLY:  air_chemistry, cloud_physics, do3d, do3d_no, do3d_time_count,   &
+               io_blocks, io_group, message_string, ntdim_3d, nz_do3d, psolver, &
                simulated_time, time_since_reference_point, urban_surface,      &
                varnamelength
         
@@ -194,9 +200,9 @@
     USE urban_surface_mod,                                                     &
         ONLY:  nzub, nzut, usm_data_output_3d
 
-#ifdef KPP_CHEM
-    USE kchem_driver,                                                          &
-        ONLY:  kchem_data_output_3d, use_kpp_chemistry
+#if defined( __chem )
+    USE chemistry_model_mod,                                                          &
+        ONLY:  chem_data_output_3d
 #endif
 
     IMPLICIT NONE
@@ -552,7 +558,7 @@
                 to_be_resorted => s_av
              ENDIF
 
-!#ifdef KPP_CHEM                                             
+!#if defined( __chem )                                             
 !         print*, 'fm data_output_3d  #5.1'        !bK  debug   
 !        
 !          CASE ( 'rs' )                     !bK added this case block
@@ -641,15 +647,15 @@
 
 !
 !--          Chemistry quantity
-#ifdef KPP_CHEM
-             IF ( .NOT. found  .AND.  use_kpp_chemistry )  THEN
-!                if(myid == 0) print*,'fm data_output_3d call kchem_data_output_3d #6.1 found ... ', found
+#if defined( __chem )
+             IF ( .NOT. found  .AND.  air_chemistry )  THEN
+!                if(myid == 0) print*,'fm data_output_3d call chem_data_output_3d #6.1 found ... ', found
   
-                CALL kchem_data_output_3d( av, do3d(av,if), found,             &
+                CALL chem_data_output_3d( av, do3d(av,if), found,             &
                                                local_pf )
                 resorted = .TRUE.
              ENDIF
-!                if(myid == 0) print*,'fm data_output_3d call kchem_data_output_3d #6.1 local_pf ... ',local_pf
+!                if(myid == 0) print*,'fm data_output_3d call chem_data_output_3d #6.1 local_pf ... ',local_pf
 
 
 #ENDIF

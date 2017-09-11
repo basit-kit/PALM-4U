@@ -14,7 +14,7 @@
 ! You should have received a copy of the GNU General Public License along with
 ! PALM. If not, see <http://www.gnu.org/licenses/>.
 !
-! Copyright 1997-2016 Leibniz Universitaet Hannover
+! Copyright 1997-2017 Leibniz Universitaet Hannover
 !------------------------------------------------------------------------------!
 !
 ! Current revisions:
@@ -23,8 +23,13 @@
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: sum_up_3d_data.f90 2382 2017-09-01 12:20:53Z basit $
+! $Id: sum_up_3d_data.f90 2425 2017-09-11 14:21:39Z basit $
 !
+! 2419 2017-09-06 16:05:48Z basit
+! renamed kchem_driver as chemistry_model_mod, use_kpp_chemistry as
+! air_chemistry. prefix 'k' is removed from kchem_* variables and 
+! subroutines. prep directive 'KPP_CHEM' renamed as '__chem'. ! 
+! 
 ! 2031 2016-10-21 15:11:58Z knoop
 ! renamed variable rho to rho_ocean and rho_av to rho_ocean_av
 ! 
@@ -146,8 +151,8 @@
         ONLY:  l_d_cp, pt_d_t
 
     USE control_parameters,                                                    &
-        ONLY:  average_count_3d, cloud_physics, doav, doav_n, rho_surface,     &
-               urban_surface, varnamelength
+        ONLY:  air_chemistry, average_count_3d, cloud_physics, doav, doav_n,   &
+               rho_surface, urban_surface, varnamelength
 
     USE cpulog,                                                                &
         ONLY:  cpu_log, log_point
@@ -172,10 +177,10 @@
     USE urban_surface_mod,                                                     &
         ONLY:  usm_average_3d_data
 
-#ifdef KPP_CHEM
-    USE kchem_driver,                                                          &
-        ONLY: chem_species, chem_species_av, kchem_integrate, NSPEC, NVAR,                     &   !bK NVAR, SPC_NAMES added bk pe1
-              use_kpp_chemistry, SPC_NAMES, kchem_3d_data_averaging
+#if defined( __chem )
+    USE chemistry_model_mod,                                                          &
+        ONLY: chem_species, chem_species_av, chem_integrate, nspec, NVAR,                     &   !bK NVAR, SPC_NAMES added bk pe1
+              SPC_NAMES, chem_3d_data_averaging
     USE arrays_3d,                                                             &   !bK added moduel arrays_3d  
         ONLY: rssws, rsswst, rs_p, rs, trs_m
  
@@ -217,13 +222,13 @@
           ENDIF
 
 
-         DO nn = 1, NSPEC
+         DO nn = 1, nspec
             IF (TRIM(trimvar(4:)) == TRIM(chem_species_av(nn)%name)) THEN
             spec_name = trimvar 
             ENDIF
          ENDDO
-if(myid==0) write(9,*) 'fm 75 sum_, ii is ',ii,' ..trimvar is.. ',trimvar,' doav(ii) is ',doav(ii), 'and spec_name is ',spec_name                        !bK debug
-flush(9)
+!if(myid==0) write(9,*) 'fm 75 sum_, ii is ',ii,' ..trimvar is.. ',trimvar,' doav(ii) is ',doav(ii), 'and spec_name is ',spec_name                        !bK debug
+!flush(9)
 !if(myid==0) print*,'print chem_spcs%name',chem_species(:)%name
 
        
@@ -471,9 +476,9 @@ flush(9)
                 ENDIF
 
 !--             palm - chemistry                                            !bK added this block
-#ifdef KPP_CHEM                
-                IF ( use_kpp_chemistry )  THEN
-                   CALL kchem_3d_data_averaging('allocate', doav(ii) )
+#if defined( __chem )                
+                IF ( air_chemistry )  THEN
+                   CALL chem_3d_data_averaging('allocate', doav(ii) )
                 ENDIF
 #endif
 !
@@ -857,9 +862,9 @@ flush(9)
              IF ( radiation )  THEN
                 CALL radiation_3d_data_averaging( 'sum', doav(ii) )
              ENDIF
-#ifdef KPP_CHEM                
-                IF ( use_kpp_chemistry )   THEN
-                   CALL kchem_3d_data_averaging('sum',doav(ii) )
+#if defined( __chem )                
+                IF ( air_chemistry )   THEN
+                   CALL chem_3d_data_averaging('sum',doav(ii) )
                 ENDIF
 #endif
 
