@@ -14,7 +14,7 @@
 ! You should have received a copy of the GNU General Public License along with
 ! PALM. If not, see <http://www.gnu.org/licenses/>.
 !
-! Copyright 1997-2016 Leibniz Universitaet Hannover
+! Copyright 1997-2017 Leibniz Universitaet Hannover
 !
 !------------------------------------------------------------------------------!
 ! Current revisions:
@@ -23,12 +23,15 @@
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: surface_layer_fluxes_mod.f90 2038 2016-10-26 11:16:56Z knoop $
+! $Id: surface_layer_fluxes_mod.f90 2425 2017-09-11 14:21:39Z basit $
 !
+! 2382 2017-09-01 12:20:53Z basit
+! replaced 'chemistry' with 'air_chemistry' 
+! 
 ! 2037 2016-10-26 11:15:40Z knoop
 ! Anelastic approximation implemented
 ! 
-! 2011 2016-09-19 17:29:57Z kanani
+! air_chemistry 2011 2016-09-19 17:29:57Z kanani
 ! Flag urban_surface is now defined in module control_parameters.
 ! 
 ! 2007 2016-08-24 15:47:17Z kanani
@@ -171,7 +174,8 @@
     USE cpulog
 
     USE control_parameters,                                                    &
-        ONLY:  chemistry, cloud_physics, constant_chemistryflux, constant_heatflux, constant_scalarflux,  &     !bK added chemistry, constant_chemistryflux
+        ONLY:  air_chemistry, cloud_physics, constant_chemistryflux,           &
+               constant_heatflux, constant_scalarflux,                         &     !bK added air_chemistry, constant_chemistryflux
                constant_waterflux, coupling_mode, g, humidity, ibc_e_b,        &
                ibc_pt_b, initializing_actions, kappa,                          &
                intermediate_timestep_count,                                    &
@@ -964,7 +968,7 @@
           ENDIF
        ENDIF
 
-       IF ( chemistry )  THEN                               !bK added this nested IF block
+       IF ( air_chemistry )  THEN                               !bK added this nested IF block
           IF ( constant_chemistryflux )  THEN
 !
 !--          For a given water flux in the surface layer
@@ -1139,7 +1143,7 @@
        ENDIF       
 !
 !--    Compute the vertical chemistry flux
-       IF (  .NOT.  constant_chemistryflux  .AND.  chemistry  .AND.            &        !bK adde this IF block 
+       IF (  .NOT.  constant_chemistryflux  .AND.  air_chemistry  .AND.            &        !bK adde this IF block 
              ( simulated_time <= skip_time_do_lsm                              &
             .OR.  .NOT.  land_surface ) )  THEN
           !$OMP PARALLEL DO

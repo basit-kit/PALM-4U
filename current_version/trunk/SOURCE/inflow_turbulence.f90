@@ -14,7 +14,7 @@
 ! You should have received a copy of the GNU General Public License along with
 ! PALM. If not, see <http://www.gnu.org/licenses/>.
 !
-! Copyright 1997-2016 Leibniz Universitaet Hannover
+! Copyright 1997-2017 Leibniz Universitaet Hannover
 !------------------------------------------------------------------------------!
 !
 ! Current revisions:
@@ -23,8 +23,11 @@
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: inflow_turbulence.f90 2001 2016-08-20 18:41:22Z knoop $
+! $Id: inflow_turbulence.f90 2425 2017-09-11 14:21:39Z basit $
 !
+! 2382 2017-09-01 12:20:53Z basit
+! replaced 'chemistry' with 'air_chemistry' 
+! 
 ! 2000 2016-08-20 18:09:15Z knoop
 ! Forced header and separation lines into 80 columns
 ! 
@@ -80,7 +83,8 @@
         ONLY:  e, inflow_damping_factor, mean_inflow_profiles, pt, q, s, u, v, w
         
     USE control_parameters,                                                    &
-        ONLY:  humidity, passive_scalar, recycling_plane, recycling_yshift, chemistry
+        ONLY:  air_chemistry, humidity, passive_scalar, recycling_plane,       &
+               recycling_yshift 
         
     USE cpulog,                                                                &
         ONLY:  cpu_log, log_point
@@ -92,7 +96,7 @@
     
     USE pegrid
 
-#ifdef KPP_CHEM
+#if defined( __chem )
     USE arrays_3d, ONLY: rs 
 #endif
 
@@ -145,7 +149,7 @@
                    avpr_l(k,6,l) = avpr_l(k,6,l) + q(k,j,i)
                 IF ( passive_scalar )                                          &
                    avpr_l(k,7,l) = avpr_l(k,7,l) + s(k,j,i)
-                IF ( chemistry )                                          &
+                IF ( air_chemistry )                                           &
                    avpr_l(k,8,l) = avpr_l(k,8,l) + rs(k,j,i)
 
              ENDDO
@@ -174,7 +178,7 @@
                 avpr_l(k,6,l) = avpr_l(k,6,l) + q(k,j,i)
              IF ( passive_scalar )                                             &
                 avpr_l(k,7,l) = avpr_l(k,7,l) + s(k,j,i)
-             IF ( chemistry )                                             &
+             IF ( air_chemistry )                                             &
                 avpr_l(k,8,l) = avpr_l(k,8,l) + s(k,j,i)
 
           ENDDO
@@ -205,7 +209,7 @@
                    inflow_dist(k,j,6,l) = q(k,j,i) - avpr(k,6,l)
                 IF ( passive_scalar )                                          &
                    inflow_dist(k,j,7,l) = s(k,j,i) - avpr(k,7,l)
-                IF ( chemistry )                                          &
+                IF ( air_chemistry )                                          &
                    inflow_dist(k,j,8,l) = rs(k,j,i) - avpr(k,8,l)
 
             ENDDO
@@ -228,7 +232,7 @@
                 inflow_dist(k,j,6,l) = q(k,j,i) - avpr(k,6,l)
              IF ( passive_scalar )                                             &
                 inflow_dist(k,j,7,l) = s(k,j,i) - avpr(k,7,l)
-             IF ( chemistry )                                             &
+             IF ( air_chemistry )                                             &
                 inflow_dist(k,j,8,l) = s(k,j,i) - avpr(k,8,l)
  
               
@@ -313,7 +317,7 @@
              IF ( passive_scalar )                                          &       !bK replaced above 3 commented lines with ..
                 s(k,j,-nbgp:-1)  = avpr(k,7,1:nbgp) +                       &       !this if condition for task-1
                         inflow_dist(k,j,7,1:nbgp) * inflow_damping_factor(k)
-            IF ( chemistry )                                                &
+            IF ( air_chemistry )                                                &
                 rs(k,j,-nbgp:-1)  = avpr(k,8,1:nbgp) +                     &       !this if condition for task-1
                         inflow_dist(k,j,8,1:nbgp) * inflow_damping_factor(k)
  

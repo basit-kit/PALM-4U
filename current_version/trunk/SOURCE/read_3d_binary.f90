@@ -14,7 +14,7 @@
 ! You should have received a copy of the GNU General Public License along with
 ! PALM. If not, see <http://www.gnu.org/licenses/>.
 !
-! Copyright 1997-2016 Leibniz Universitaet Hannover
+! Copyright 1997-2017 Leibniz Universitaet Hannover
 !------------------------------------------------------------------------------!
 !
 ! Current revisions:
@@ -23,8 +23,13 @@
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: read_3d_binary.f90 2032 2016-10-21 15:13:51Z knoop $
+! $Id: read_3d_binary.f90 2425 2017-09-11 14:21:39Z basit $
 !
+! 2419 2017-09-06 16:05:48Z basit
+! renamed kchem_driver to chemistry_model_mod, use_kpp_chemistry to
+! air_chemistry. replaced 'chemistry' with 'air_chemistry'. prefix 'k' is removed from other chem vars
+! and subroutine names. KPP_CHEM prep directive is replaced with __chem.
+! 
 ! 2031 2016-10-21 15:11:58Z knoop
 ! renamed variable rho_av to rho_ocean_av
 ! 
@@ -129,8 +134,8 @@
     USE averaging
 
     USE control_parameters,                                                    &
-        ONLY:  iran, message_string, outflow_l, outflow_n, outflow_r, outflow_s, &
-               chemistry 
+        ONLY:  air_chemistry, iran, message_string, outflow_l, outflow_n,      &
+               outflow_r, outflow_s 
 
     USE cpulog,                                                                &
         ONLY:  cpu_log, log_point_s
@@ -161,8 +166,8 @@
     USE spectra_mod,                                                           &
         ONLY:  spectrum_x, spectrum_y
 
-    USE kchem_driver,                                                          &
-        ONLY: chem_species, NSPEC, use_kpp_chemistry, kchem_read_restart_data
+    USE chemistry_model_mod,                                                          &
+        ONLY: chem_species, nspec, chem_read_restart_data
 
 
     IMPLICIT NONE
@@ -211,7 +216,7 @@
     INTEGER(iwp), DIMENSION(numprocs_previous_run,1000) ::  offset_xa  !<
     INTEGER(iwp), DIMENSION(numprocs_previous_run,1000) ::  offset_ya  !<
 
-#ifdef KPP_CHEM
+#if defined( __chem )
     INTEGER(iwp) ::  kc_n                   !<   
 #endif 
 
@@ -328,7 +333,7 @@
 !-- Read data from all restart files determined above
     DO  i = 1, files_to_be_opened
 
-        print*,'41@331, files to be opened .. i .. ',i, 'and files_to_be_opened is .. ',files_to_be_opened     !bK
+!        print*,'41@331, files to be opened .. i .. ',i, 'and files_to_be_opened is .. ',files_to_be_opened     !bK
        j = file_list(i)
 !
 !--    Set the filename (underscore followed by four digit processor id)
@@ -753,7 +758,7 @@
                    s_av(:,nysc-nbgp:nync+nbgp,nxlc-nbgp:nxrc+nbgp) = &
                                  tmp_3d(:,nysf-nbgp:nynf+nbgp,nxlf-nbgp:nxrf+nbgp)
 
-!#ifdef KPP_CHEM
+!#if defined( __chem )
 !                CASE ( field_chr(1:3)== 'kc_O3' )                                        !bK added this CASE block
 !                   IF ( k == 1 )  READ ( 13 )  tmp_3d
 !                    print*,'fm #41@755 read_3d_binar, reading rs data'                        !bK debug
@@ -841,7 +846,7 @@
                          READ ( 13 )  spectrum_y
                       ENDIF
                    ENDIF
-!#ifdef KPP_CHEM
+!#if defined( __chem )
 !
 !                CASE ( 'rss' )
 !                   IF ( k == 1 )  READ ( 13 )  tmp_2d
@@ -1188,7 +1193,7 @@
 print*,'fm #41@1188 within enddo loop.. i.. ',i,' .. files_to_be_opened .. ',files_to_be_opened
        ENDDO  ! loop over variables
 
-print*,'fm #41@1191 bef calling kchem_restart..'
+print*,'fm #41@1191 bef calling chem_restart..'
 !
 !--    Read land surface restart data
        IF ( land_surface )  THEN
@@ -1208,20 +1213,20 @@ print*,'fm #41@1191 bef calling kchem_restart..'
                                             tmp_2d, tmp_3d )
        ENDIF
 
-#ifdef KPP_CHEM
-        print*,'fm 41@1212 bef calling kchem_restart. chemistry is ..', chemistry
+#if defined( __chem )
+        print*,'fm 41@1212 bef calling chem_restart. chemistry is ..', air_chemistry
 
-       IF ( use_kpp_chemistry )  THEN
+       IF ( air_chemistry )  THEN
 
-          CALL kchem_read_restart_data( i, nxlfa, nxl_on_file, nxrfa,          &
+          CALL chem_read_restart_data( i, nxlfa, nxl_on_file, nxrfa,          &
                                             nxr_on_file, nynfa, nyn_on_file,   &
                                             nysfa, nys_on_file, offset_xa,     &
                                             offset_ya, overlap_count(i),tmp_3d )
-        print*,'fm 41@1220 aft calling kchem_restart ..'
+        print*,'fm 41@1220 aft calling chem_restart ..'
                                             
        ENDIF
         
-!        DO kc_n = 1, NSPEC
+!        DO kc_n = 1, nspec
 !           if (field_chr == chem_species(kc_n)%name) then
 !               if (k == 1 ) READ (13)  tmp_3d
 !                   chem_species(kc_n)%conc = tmp_3d

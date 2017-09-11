@@ -14,7 +14,7 @@
 ! You should have received a copy of the GNU General Public License along with
 ! PALM. If not, see <http://www.gnu.org/licenses/>.
 !
-! Copyright 1997-2016 Leibniz Universitaet Hannover
+! Copyright 1997-2017 Leibniz Universitaet Hannover
 !------------------------------------------------------------------------------!
 !
 ! Current revisions:
@@ -23,8 +23,13 @@
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: write_3d_binary.f90 2032 2016-10-21 15:13:51Z knoop $
+! $Id: write_3d_binary.f90 2425 2017-09-11 14:21:39Z basit $
 !
+! 2386 2017-09-04 12:23:03Z basit
+! renamed kchem_driver to chemistry_model_mod, use_kpp_chemistry to
+! air_chemistry. prefix 'k' is removed from other chem vars
+! and subroutine names. KPP_CHEM prep directive replaced with __chem.! 
+! 
 ! 2031 2016-10-21 15:11:58Z knoop
 ! renamed variable rho_av to rho_ocean_av
 ! 
@@ -122,8 +127,8 @@
     USE averaging
 
     USE control_parameters,                                                    &
-        ONLY:  iran, humidity, passive_scalar, chemistry, cloud_physics, cloud_droplets,  &
-               microphysics_seifert, ocean, topography
+        ONLY:  air_chemistry, iran, humidity, passive_scalar, cloud_physics,   &
+               cloud_droplets, microphysics_seifert, ocean, topography
                 
     USE indices,                                                               &
         ONLY:  nxl, nxr, nys, nyn, nzb, nzt
@@ -142,9 +147,10 @@
     USE spectra_mod,                                                           &
         ONLY:  spectrum_x, spectrum_y
 
-    USE kchem_driver,                                                          &
-        ONLY: kchem_last_actions, use_kpp_chemistry                            
-
+#if defined( __chem )         
+    USE chemistry_model_mod,                                                   &
+        ONLY: chem_last_actions                             
+#endif
 
     IMPLICIT NONE
 
@@ -154,7 +160,7 @@
 !
 !-- Write control parameters and other variables for restart.
     IF ( myid == 0 )  CALL write_var_list
-    if(myid == 0) print*,'fm write_3d_binary, #21 '        !bK debug
+!    if(myid == 0) print*,'fm write_3d_binary, #21 '        !bK debug
 !
 !-- Write arrays.
     binary_version = '4.5'
@@ -168,7 +174,7 @@
 !-- ---------  of the variable binary_version must be changed!
 !--            Also, the list of arrays to be read in read_3d_binary must be
 !--            adjusted accordingly.
-if(myid == 0) print*,'fm 90@167 write bin is: ',chemistry
+if(myid == 0) print*,'fm 90@167 write bin is: ',air_chemistry
 
     WRITE ( 14 )  'e                   ';  WRITE ( 14 )  e
     IF ( ALLOCATED( e_av ) )  THEN
@@ -267,12 +273,12 @@ if(myid == 0) print*,'fm 90@167 write bin is: ',chemistry
        WRITE ( 14 )  'sswst               ';  WRITE ( 14 ) sswst
     ENDIF    
 
-!#ifdef KPP_CHEM
+!#if defined( __chem )
 !
-!    if(myid == 0) print*,'fm 90@267 write bin is: ',chemistry
+!    if(myid == 0) print*,'fm 90@267 write bin is: ',air_chemistry
 !
-!    IF ( use_kpp_chemistry )  THEN                                                  !bK added this if block to generate
-!        CALL kchem_last_actions
+!    IF ( air_chemistry )  THEN                                                  !bK added this if block to generate
+!        CALL chem_last_actions
 !    END IF
 
 

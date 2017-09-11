@@ -20,12 +20,16 @@
 # Current revisions:
 # ------------------
 # 
-# Initial Version of KPP chemistry 
 # 
 # Former revisions:
 # -----------------
-# $Id: Makefile 2055 2016-11-09 09:30:24Z ketelsen $
+# $Id: Makefile 2425 2017-09-11 14:21:39Z basit $
 #
+# 2382 2017-09-01 12:20:53Z basit
+# renamed kchem_driver to chemistry_model_mod, kchem_kpp to  chem_gasphase_mod
+# and kchem_photolysis to chem_photolysis_mod.
+# # Initial Version of KPP chemistry 
+# 
 # 2050 2016-11-08 15:00:55Z gronemeier
 # Implement turbulent outflow method
 # 
@@ -325,7 +329,8 @@ SOURCES = advec_s_bc.f90 advec_s_pw.f90 advec_s_up.f90 advec_ws.f90 \
 	init_advec.f90 init_cloud_physics.f90 init_coupling.f90 init_dvrp.f90 \
 	init_grid.f90 init_masks.f90 init_ocean.f90 \
 	init_pegrid.f90 init_pt_anomaly.f90 init_rankine.f90 init_slope.f90 \
-	interaction_droplets_ptq.f90 kchem_driver.f90 kchem_kpp.f90 land_surface_model_mod.f90 \
+	interaction_droplets_ptq.f90  land_surface_model_mod.f90 \
+	chemistry_model_mod.f90 chem_gasphase_mod.f90 chem_photolysis_mod.f90 \
 	local_stop.f90 local_system.f90 local_tremain.f90 \
 	local_tremain_ini.f90 lpm.f90 lpm_advec.f90 lpm_boundary_conds.f90 \
 	lpm_calc_liquid_water_content.f90 lpm_collision_kernels.f90 \
@@ -430,7 +435,7 @@ check_open.o: modules.o mod_kinds.o mod_particle_attributes.o \
 check_parameters.o: modules.o mod_kinds.o land_surface_model_mod.o \
 	netcdf_interface_mod.o plant_canopy_model_mod.o pmc_interface_mod.o radiation_model_mod.o \
 	spectra_mod.o subsidence_mod.o microphysics_mod.o wind_turbine_model_mod.o \
-	urban_surface_mod.o kchem_driver.o
+	urban_surface_mod.o chemistry_model_mod.o
 close_file.o: modules.o mod_kinds.o netcdf_interface_mod.o
 compute_vpt.o: modules.o mod_kinds.o
 coriolis.o: modules.o mod_kinds.o
@@ -452,7 +457,7 @@ data_output_2d.o: modules.o cpulog_mod.o mod_kinds.o mod_particle_attributes.o \
    netcdf_interface_mod.o land_surface_model_mod.o radiation_model_mod.o \
    urban_surface_mod.o
 data_output_3d.o: modules.o cpulog_mod.o mod_kinds.o mod_particle_attributes.o \
-   netcdf_interface_mod.o land_surface_model_mod.o urban_surface_mod.o kchem_driver.o
+   netcdf_interface_mod.o land_surface_model_mod.o urban_surface_mod.o chemistry_model_mod.o
 diffusion_e.o: modules.o mod_kinds.o microphysics_mod.o \
    mod_particle_attributes.o
 diffusion_s.o: modules.o mod_kinds.o
@@ -492,8 +497,9 @@ init_pt_anomaly.o: modules.o mod_kinds.o
 init_rankine.o: modules.o mod_kinds.o
 init_slope.o: modules.o mod_kinds.o
 interaction_droplets_ptq.o: modules.o mod_kinds.o
-kchem_driver.o: kchem_kpp.o  modules.o mod_kinds.o
-kchem_kpp.o: mod_kinds.o
+chemistry_model_mod.o: chem_gasphase_mod.o modules.o mod_kinds.o
+chem_gasphase_mod.o: mod_kinds.o
+chem_photolysis_mod.o: mod_kinds.o chem_gasphase_mod.o chemistry_model_mod.o radiation_model_mod.o
 land_surface_model_mod.o: modules.o mod_kinds.o radiation_model_mod.o
 local_stop.o: modules.o mod_kinds.o pmc_interface_mod.o
 local_tremain.o: modules.o cpulog_mod.o mod_kinds.o
@@ -531,15 +537,15 @@ modules.o: modules.f90 mod_kinds.o
 mod_kinds.o: mod_kinds.f90
 mod_particle_attributes.o: mod_particle_attributes.f90 mod_kinds.o
 netcdf_interface_mod.o: netcdf_interface_mod.f90 modules.o mod_kinds.o \
-   land_surface_model_mod.o radiation_model_mod.o spectra_mod.o urban_surface_mod.o kchem_driver.o
+   land_surface_model_mod.o radiation_model_mod.o spectra_mod.o urban_surface_mod.o chemistry_model_mod.o
 nudging_mod.o: modules.o cpulog_mod.o mod_kinds.o
 outflow_turbulence.o: modules.o cpulog_mod.o mod_kinds.o
 package_parin.o: modules.o mod_kinds.o mod_particle_attributes.o
 palm.o: modules.o cpulog_mod.o land_surface_model_mod.o ls_forcing_mod.o mod_kinds.o nudging_mod.o\
-	pmc_interface_mod.o surface_layer_fluxes_mod.o kchem_driver.o
+	pmc_interface_mod.o surface_layer_fluxes_mod.o chemistry_model_mod.o
 parin.o: modules.o cpulog_mod.o land_surface_model_mod.o mod_kinds.o netcdf_interface_mod.o \
    plant_canopy_model_mod.o pmc_interface_mod.o progress_bar_mod.o spectra_mod.o \
-   radiation_model_mod.o microphysics_mod.o virtual_flight_mod.o wind_turbine_model_mod.o kchem_driver.o
+   radiation_model_mod.o microphysics_mod.o virtual_flight_mod.o wind_turbine_model_mod.o chemistry_model_mod.o
 plant_canopy_model_mod.o: modules.o mod_kinds.o
 pmc_interface_mod.o: modules.o mod_kinds.o pmc_child_mod.o pmc_general_mod.o \
 	pmc_handle_communicator_mod.o pmc_mpi_wrapper_mod.o pmc_parent_mod.o
@@ -560,7 +566,7 @@ prognostic_equations.o: modules.o advec_s_pw.o advec_s_up.o advec_s_bc.o advec_u
 	advec_u_up.o advec_v_pw.o advec_v_up.o advec_w_pw.o advec_w_up.o \
 	advec_ws.o buoyancy.o calc_radiation.o coriolis.o \
 	cpulog_mod.o diffusion_e.o diffusion_s.o diffusion_u.o diffusion_v.o diffusion_w.o \
-	eqn_state_seawater.o kchem_driver.o mod_kinds.o microphysics_mod.o \
+	eqn_state_seawater.o chemistry_model_mod.o mod_kinds.o microphysics_mod.o \
 	nudging_mod.o plant_canopy_model_mod.o production_e.o radiation_model_mod.o \
 	subsidence_mod.o urban_surface_mod.o user_actions.o wind_turbine_model_mod.o
 progress_bar_mod.o: modules.o mod_kinds.o
@@ -569,7 +575,7 @@ random_function_mod.o: mod_kinds.o
 random_gauss.o: mod_kinds.o random_function_mod.o random_generator_parallel_mod.o
 random_generator_parallel_mod.o: mod_kinds.o
 read_3d_binary.o: modules.o cpulog_mod.o mod_kinds.o \
-   land_surface_model_mod.o radiation_model_mod.o kchem_driver.o random_function_mod.o \
+   land_surface_model_mod.o radiation_model_mod.o chemistry_model_mod.o random_function_mod.o \
    random_generator_parallel_mod.o spectra_mod.o
 read_var_list.o: modules.o mod_kinds.o netcdf_interface_mod.o plant_canopy_model_mod.o \
    spectra_mod.o microphysics_mod.o urban_surface_mod.o virtual_flight_mod.o
@@ -585,12 +591,12 @@ surface_coupler.o: modules.o cpulog_mod.o mod_kinds.o
 surface_layer_fluxes_mod.o: modules.o mod_kinds.o land_surface_model_mod.o \
 	urban_surface_mod.o
 swap_timelevel.o: modules.o cpulog_mod.o mod_kinds.o land_surface_model_mod.o \
-   pmc_interface_mod.o urban_surface_mod.o kchem_driver.o
+   pmc_interface_mod.o urban_surface_mod.o chemistry_model_mod.o
 temperton_fft_mod.o: modules.o mod_kinds.o
 time_integration.o: modules.o advec_ws.o buoyancy.o calc_mean_profile.o \
 	cpulog_mod.o data_output_flight.o interaction_droplets_ptq.o land_surface_model_mod.o \
 	ls_forcing_mod.o mod_kinds.o nudging_mod.o pmc_interface_mod.o production_e.o \
-	prognostic_equations.o progress_bar_mod.o radiation_model_mod.o \
+	prognostic_equations.o progress_bar_mod.o radiation_model_mod.o chem_photolysis_mod.o \
 	spectra_mod.o user_actions.o surface_layer_fluxes_mod.o microphysics_mod.o \
 	urban_surface_mod.o virtual_flight_mod.o wind_turbine_model_mod.o
 time_to_string.o: mod_kinds.o

@@ -14,7 +14,7 @@
 ! You should have received a copy of the GNU General Public License along with
 ! PALM. If not, see <http://www.gnu.org/licenses/>.
 !
-! Copyright 1997-2016 Leibniz Universitaet Hannover
+! Copyright 1997-2017 Leibniz Universitaet Hannover
 !------------------------------------------------------------------------------!
 !
 ! Current revisions:
@@ -23,8 +23,11 @@
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: init_3d_model.f90 2038 2016-10-26 11:16:56Z knoop $
+! $Id: init_3d_model.f90 2425 2017-09-11 14:21:39Z basit $
 !
+! 2382 2017-09-01 12:20:53Z basit
+! replaced 'chemistry'  with 'air_chemistry'. 
+! 
 ! 2037 2016-10-26 11:15:40Z knoop
 ! Anelastic approximation implemented
 ! 
@@ -635,7 +638,7 @@
 #endif
     ENDIF
 
-    IF ( chemistry )  THEN                                                      !bK added this IF block
+    IF ( air_chemistry )  THEN                                                      !bK added this IF block
 !
 !--    2D-rscalar arrays
        ALLOCATE ( rss(nysg:nyng,nxlg:nxrg),                                     &
@@ -921,7 +924,7 @@
        s => s_1;  s_p => s_2;  ts_m => s_3
     ENDIF    
 
-    IF ( chemistry )  THEN                              !bK added this IF block
+    IF ( air_chemistry )  THEN                              !bK added this IF block
        rs => rs_1;  rs_p => rs_2;  trs_m => rs_3
     ENDIF    
 
@@ -1026,8 +1029,8 @@
                 ENDDO
              ENDDO   
           ENDIF
-!#ifdef KPP_CHEM
-!          IF ( chemistry )  THEN        !bK added this IF block
+!#if defined( __chem )
+!          IF ( air_chemistry )  THEN        !bK added this IF block
 !             DO  i = nxlg, nxrg
 !                DO  j = nysg, nyng
 !                   rs(:,j,i) =rs_init
@@ -1086,8 +1089,8 @@
 !
 !--       Initialize scaling parameter for passive scalar
           IF ( passive_scalar ) ss = 0.0_wp          
-!#ifdef KPP_CHEM
-!          IF ( chemistry ) rss = 0.0_wp             !bK added IF block
+!#if defined( __chem )
+!          IF ( air_chemistry ) rss = 0.0_wp             !bK added IF block
 !#endif
 !--       Inside buildings set velocities back to zero
           IF ( topography /= 'flat' )  THEN
@@ -1190,8 +1193,8 @@
                 ENDDO
              ENDDO
           ENDIF
-!#ifdef KPP_CHEM
-!          IF ( chemistry )  THEN        !bK added this IF block
+!#if defined( __chem )
+!          IF ( air_chemistry )  THEN        !bK added this IF block
 !             DO  i = nxlg, nxrg
 !                DO  j = nysg, nyng
 !                   rs(:,j,i) = rs_init
@@ -1244,8 +1247,8 @@
           vswst = top_momentumflux_v * momentumflux_input_conversion(nzt+1)
           IF ( humidity )       qs = 0.0_wp
           IF ( passive_scalar ) ss = 0.0_wp
-!#ifdef KPP_CHEM
-!          IF ( chemistry )     rss = 0.0_wp     !bK added this IF block
+!#if defined( __chem )
+!          IF ( air_chemistry )     rss = 0.0_wp     !bK added this IF block
 !#endif
 !
 !--       Compute initial temperature field and other constants used in case
@@ -1325,8 +1328,8 @@
 !--       Store initial scalar profile
           hom(:,1,115,:) = SPREAD(  s(:,nys,nxl), 2, statistic_regions+1 )
        ENDIF
-!#ifdef KPP_CHEM
-!       IF ( chemistry )  THEN
+!#if defined( __chem )
+!       IF ( air_chemistry )  THEN
 !
 !--       Store initial scalar profile
 !          hom(:,1,115,:) = SPREAD(  rs(:,nys,nxl), 2, statistic_regions+1 )
@@ -1438,9 +1441,9 @@
              ENDIF
           ENDIF    
 
-!#ifdef KPP_CHEM
+!#if defined( __chem )
 !--       Initialize the near-surface scalar flux
-!          IF ( chemistry )  THEN                                !bK added this IF block
+!          IF ( air_chemistry )  THEN                                !bK added this IF block
 !             IF ( constant_chemistryflux )  THEN
 !                rssws   = surface_chemistryflux
 !
@@ -1489,9 +1492,9 @@
           IF ( passive_scalar .AND. constant_top_scalarflux )                  &
              sswst = top_scalarflux
 
-!#ifdef KPP_CHEM
+!#if defined( __chem )
 !--       Prescribe top chemistry flux
-!          IF ( chemistry .AND. constant_top_chemistryflux )                  &       !bK added this IF block
+!          IF ( air_chemistry .AND. constant_top_chemistryflux )                  &       !bK added this IF block
 !             rsswst = top_chemistryflux
 !#endif
 
@@ -1532,8 +1535,8 @@
              ENDIF
           ENDIF
           IF ( passive_scalar  .AND.  .NOT.  constant_scalarflux )  ssws = 0.0_wp
-!#ifdef KPP_CHEM
-!          IF ( chemistry  .AND.  .NOT.  constant_chemistryflux )       rssws = 0.0_wp   !bK added this IF
+!#if defined( __chem )
+!          IF ( air_chemistry  .AND.  .NOT.  constant_chemistryflux )       rssws = 0.0_wp   !bK added this IF
 !#endif
         ENDIF
 
@@ -1601,8 +1604,8 @@
           
        IF ( passive_scalar .AND.  s_surface_initial_change /= 0.0_wp )         &
           s(nzb,:,:) = s(nzb,:,:) + s_surface_initial_change
-!#ifdef KPP_CHEM        
-       IF ( chemistry .AND.  rs_surface_initial_change /= 0.0_wp )         &            !bK added this IF block
+!#if defined( __chem )        
+       IF ( air_chemistry .AND.  rs_surface_initial_change /= 0.0_wp )         &            !bK added this IF block
           rs(nzb,:,:) = rs(nzb,:,:) + rs_surface_initial_change
 !#endif 
 !
@@ -1625,8 +1628,8 @@
           ts_m = 0.0_wp
           s_p  = s
        ENDIF       
-!#ifdef KPP_CHEM
-!       IF ( chemistry  )  THEN          !bK added this IF block
+!#if defined( __chem )
+!       IF ( air_chemistry  )  THEN          !bK added this IF block
 !          trs_m = 0.0_wp
 !          rs_p  = rs
 !       ENDIF       
@@ -1698,8 +1701,8 @@
              mean_inflow_profiles(:,6) = hom_sum(:,41,0)   ! q
           IF ( passive_scalar )                                                &
              mean_inflow_profiles(:,7) = hom_sum(:,115,0)   ! s
-!#ifdef KPP_CHEM
-!          IF ( chemistry )                                                &
+!#if defined( __chem )
+!          IF ( air_chemistry )                                                &
 !             mean_inflow_profiles(:,8) = hom_sum(:,115,0)   !rs  !bK added IF block          
 !#endif
 
@@ -1734,8 +1737,8 @@
                    IF ( passive_scalar )                                       &
                       s(k,j,nxlg:-1)  = mean_inflow_profiles(k,7)                      
 
-!#ifdef KPP_CHEM 
-!                  IF ( chemistry )                                       &         !bK added IF block
+!#if defined( __chem ) 
+!                  IF ( air_chemistry )                                       &         !bK added IF block
 !                      rs(k,j,nxlg:-1)  = mean_inflow_profiles(k,8)                      
 !#endif
                 ENDDO
@@ -1830,8 +1833,8 @@
           ENDIF
        ENDIF
        IF ( passive_scalar )  s_p   = s
-!#ifdef KPP_CHEM
-!       IF ( chemistry )       rs_p  = rs    !bK added    
+!#if defined( __chem )
+!       IF ( air_chemistry )       rs_p  = rs    !bK added    
 !#endif
 
        IF ( ocean          )  sa_p = sa
@@ -1849,8 +1852,8 @@
           ENDIF
        ENDIF
        IF ( passive_scalar )  ts_m  = 0.0_wp
-!#ifdef KPP_CHEM
-!       IF ( chemistry )       trs_m = 0.0_wp     !bK added this IF block
+!#if defined( __chem )
+!       IF ( air_chemistry )       trs_m = 0.0_wp     !bK added this IF block
 !#endif
        IF ( ocean          )  tsa_m = 0.0_wp
 

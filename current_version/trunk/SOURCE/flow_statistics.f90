@@ -14,7 +14,7 @@
 ! You should have received a copy of the GNU General Public License along with
 ! PALM. If not, see <http://www.gnu.org/licenses/>.
 !
-! Copyright 1997-2016 Leibniz Universitaet Hannover
+! Copyright 1997-2017 Leibniz Universitaet Hannover
 !------------------------------------------------------------------------------!
 !
 ! Current revisions:
@@ -23,8 +23,11 @@
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: flow_statistics.f90 2038 2016-10-26 11:16:56Z knoop $
+! $Id: flow_statistics.f90 2425 2017-09-11 14:21:39Z basit $
 !
+! 2382 2017-09-01 12:20:53Z basit
+! replaced 'chemistry' with 'air_chemistry'. 
+! 
 ! 2037 2016-10-26 11:15:40Z knoop
 ! Anelastic approximation implemented
 ! 
@@ -229,7 +232,8 @@
         ONLY:   l_d_cp, pt_d_t
         
     USE control_parameters,                                                    &
-        ONLY:   average_count_pr, chemistry, cloud_droplets, cloud_physics, do_sum,       & !bK added chemistry
+        ONLY:   air_chemistry, average_count_pr, cloud_droplets,               & !bK added air_chemistry
+                cloud_physics, do_sum,                                         & 
                 dt_3d, g, humidity, kappa, large_scale_forcing,                &
                 large_scale_subsidence, max_pr_user, message_string, neutral,  &
                 microphysics_seifert, ocean, passive_scalar, simulated_time,   &
@@ -659,7 +663,7 @@
                                             ss(j,i)   * rmask(j,i,sr)
              ENDIF
 
-             IF ( chemistry )  THEN                                                 !bK added this block
+             IF ( air_chemistry )  THEN                                                 !bK added this block
                 sums_l(nzb+13,pr_palm,tn) = sums_l(nzb+13,pr_palm,tn) +        &
                                             rss(j,i)   * rmask(j,i,sr)
              ENDIF
@@ -860,7 +864,7 @@
                    sums_l(nzb,119,tn) = sums_l(nzb,119,tn) +                     &
                                         ssws(j,i) * rmask(j,i,sr) ! w"s"
                 ENDIF
-                IF ( chemistry )  THEN                                                  !bK added this IF
+                IF ( air_chemistry )  THEN                                                  !bK added this IF
                    sums_l(nzb,119,tn) = sums_l(nzb,119,tn) +                     &
                                         rssws(j,i) * rmask(j,i,sr) ! w"s"              
                 ENDIF
@@ -952,7 +956,7 @@
                    sums_l(nzt,119,tn) = sums_l(nzt,119,tn) + &
                                         sswst(j,i) * rmask(j,i,sr) ! w"s"
                 ENDIF
-                IF ( chemistry )  THEN                                              !bK added this IF block
+                IF ( air_chemistry )  THEN                                              !bK added this IF block
                    sums_l(nzt,119,tn) = sums_l(nzt,119,tn) + &
                                         rsswst(j,i) * rmask(j,i,sr) ! w"s"
                 ENDIF
@@ -2382,7 +2386,7 @@
           !$acc end parallel
        ENDIF
 
-       IF ( chemistry )  THEN                                               !bK added this IF block
+       IF ( air_chemistry )  THEN                                               !bK added this IF block
           !$acc parallel present( ss, rmask, sums_l ) create( s1 )
           s1 = 0
           !$acc loop vector collapse( 2 ) reduction( +: s1 )
@@ -2731,7 +2735,7 @@
 
           ENDIF
 
-          IF ( chemistry )  THEN                                    !bK added this IF block
+          IF ( air_chemistry )  THEN                                    !bK added this IF block
 
              !$OMP DO
              !$acc parallel present( ssws, rmask, sums_l ) create( s1 )
@@ -2879,7 +2883,7 @@
 
           ENDIF
 
-          IF ( chemistry )  THEN                        !bK added this IF block
+          IF ( air_chemistry )  THEN                        !bK added this IF block
 
              !$OMP DO
              !$acc parallel present( sswst, rmask, sums_l ) create( s1 )

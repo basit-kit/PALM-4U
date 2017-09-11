@@ -14,7 +14,7 @@
 ! You should have received a copy of the GNU General Public License along with
 ! PALM. If not, see <http://www.gnu.org/licenses/>.
 !
-! Copyright 1997-2016 Leibniz Universitaet Hannover
+! Copyright 1997-2017 Leibniz Universitaet Hannover
 !------------------------------------------------------------------------------!
 !
 ! Current revisions:
@@ -23,8 +23,13 @@
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: average_3d_data.f90 2032 2016-10-21 15:13:51Z knoop $
+! $Id: average_3d_data.f90 2425 2017-09-11 14:21:39Z basit $
 !
+! 2419 2017-09-06 16:05:48Z basit
+! renamed kchem_driver to chemistry_model_mod, use_kpp_chemistry to
+! air_chemistry. prefix 'k' is removed from other chem vars
+! and subroutine names. KPP_CHEM prep directive replaced with __chem.! 
+! 
 ! 2031 2016-10-21 15:11:58Z knoop
 ! renamed variable rho to rho_ocean and rho_av to rho_ocean_av
 ! 
@@ -103,7 +108,8 @@
     USE averaging
 
     USE control_parameters,                                                    &
-        ONLY:  average_count_3d, doav, doav_n, urban_surface, varnamelength
+        ONLY:  air_chemistry, average_count_3d, doav, doav_n, urban_surface,   &
+               varnamelength
 
     USE cpulog,                                                                &
         ONLY:  cpu_log, log_point
@@ -122,10 +128,10 @@
     USE urban_surface_mod,                                                     &
         ONLY:  usm_average_3d_data
 
-#ifdef KPP_CHEM
-    USE kchem_driver,                                                          &
-        ONLY: chem_species, chem_species_av, kchem_integrate, NSPEC, NVAR,     &   !bK NVAR, SPC_NAMES added bk pe1
-              use_kpp_chemistry, SPC_NAMES, kchem_3d_data_averaging
+#if defined( __chem )
+    USE chemistry_model_mod,                                                          &
+        ONLY: chem_species, chem_species_av, chem_integrate, nspec, NVAR,     &   !bK NVAR, SPC_NAMES added bk pe1
+              SPC_NAMES, chem_3d_data_averaging
     USE arrays_3d,                                                             &   !bK added moduel arrays_3d  
         ONLY: rssws, rsswst, rs_p, rs, trs_m
 #endif
@@ -463,10 +469,9 @@
              ENDIF
 
 !
-!--         kchem chemisry
-#ifdef KPP_CHEM
-            IF ( use_kpp_chemistry ) THEN
-                 CALL kchem_3d_data_averaging('average',doav(ii) )
+#if defined( __chem )
+            IF ( air_chemistry ) THEN
+                 CALL chem_3d_data_averaging('average',doav(ii) )
             ENDIF
 #endif
 !

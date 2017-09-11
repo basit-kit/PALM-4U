@@ -14,7 +14,7 @@
 ! You should have received a copy of the GNU General Public License along with
 ! PALM. If not, see <http://www.gnu.org/licenses/>.
 !
-! Copyright 1997-2016 Leibniz Universitaet Hannover
+! Copyright 1997-2017 Leibniz Universitaet Hannover
 !------------------------------------------------------------------------------!
 !
 ! Current revisions:
@@ -23,7 +23,7 @@
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: write_var_list.f90 2043 2016-11-02 13:48:37Z suehring $
+! $Id: write_var_list.f90 2425 2017-09-11 14:21:39Z basit $
 !
 ! 2042 2016-11-02 13:47:31Z suehring
 ! Bugfix, write restart data for wall_heatflux, wall_qflux and wall_sflux

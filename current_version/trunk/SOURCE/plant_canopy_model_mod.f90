@@ -14,7 +14,7 @@
 ! You should have received a copy of the GNU General Public License along with
 ! PALM. If not, see <http://www.gnu.org/licenses/>.
 !
-! Copyright 1997-2016 Leibniz Universitaet Hannover
+! Copyright 1997-2017 Leibniz Universitaet Hannover
 !------------------------------------------------------------------------------!
 !
 ! Current revisions:
@@ -23,7 +23,7 @@
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: plant_canopy_model_mod.f90 2025 2016-10-12 16:44:03Z kanani $
+! $Id: plant_canopy_model_mod.f90 2425 2017-09-11 14:21:39Z basit $
 !
 ! 2024 2016-10-12 16:42:37Z kanani
 ! Added missing lad_s initialization

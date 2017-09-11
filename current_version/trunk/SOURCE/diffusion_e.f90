@@ -14,7 +14,7 @@
 ! You should have received a copy of the GNU General Public License along with
 ! PALM. If not, see <http://www.gnu.org/licenses/>.
 !
-! Copyright 1997-2016 Leibniz Universitaet Hannover
+! Copyright 1997-2017 Leibniz Universitaet Hannover
 !------------------------------------------------------------------------------!
 !
 ! Current revisions:
@@ -23,7 +23,7 @@
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: diffusion_e.f90 2038 2016-10-26 11:16:56Z knoop $
+! $Id: diffusion_e.f90 2425 2017-09-11 14:21:39Z basit $
 !
 ! 2037 2016-10-26 11:15:40Z knoop
 ! Anelastic approximation implemented

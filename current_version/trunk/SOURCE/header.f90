@@ -14,7 +14,7 @@
 ! You should have received a copy of the GNU General Public License along with
 ! PALM. If not, see <http://www.gnu.org/licenses/>.
 !
-! Copyright 1997-2016 Leibniz Universitaet Hannover
+! Copyright 1997-2017 Leibniz Universitaet Hannover
 !------------------------------------------------------------------------------!
 !
 ! Current revisions:
@@ -23,8 +23,11 @@
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: header.f90 2055 2016-11-09 09:30:24Z ketelsen $
+! $Id: header.f90 2425 2017-09-11 14:21:39Z basit $
 !
+! 2382 2017-09-01 12:20:53Z basit
+! replaced chemistry with 'air_chemistry' 
+! 
 ! 2050 2016-11-08 15:00:55Z gronemeier
 ! Implement turbulent outflow condition
 ! 
@@ -655,7 +658,7 @@
     WRITE ( io, 99 )
 
 
-    IF ( chemistry )  WRITE ( io, 134 )
+    IF ( air_chemistry )  WRITE ( io, 134 )
     IF ( conserve_volume_flow )  THEN
        WRITE ( io, 150 )  conserve_volume_flow_mode
        IF ( TRIM( conserve_volume_flow_mode ) == 'bulk_velocity' )  THEN
@@ -1075,7 +1078,7 @@
        WRITE ( io, 301 ) 's', r_lower, r_upper
     ENDIF
 
-    IF ( chemistry )  THEN                          !bK added if block
+    IF ( air_chemistry )  THEN                          !bK added if block
        IF ( ibc_rs_b == 0 )  THEN
           r_lower = 'rs(0)      = rs_surface'
        ELSE
@@ -1112,7 +1115,7 @@
        IF ( passive_scalar  .AND.  constant_scalarflux )  THEN
           WRITE ( io, 313 ) surface_scalarflux
        ENDIF
-       IF ( chemistry  .AND.  constant_scalarflux )  THEN               !bK added if block check 313 ok???
+       IF ( air_chemistry  .AND.  constant_scalarflux )  THEN               !bK added if block check 313 ok???
           WRITE ( io, 313 ) surface_scalarflux
        ENDIF
 
@@ -1133,7 +1136,7 @@
        IF ( humidity       )  WRITE ( io, 315 )
        IF ( passive_scalar .AND.  constant_top_scalarflux )                    &
           WRITE ( io, 302 ) top_scalarflux
-       IF ( chemistry .AND.  constant_top_scalarflux )                         &
+       IF ( air_chemistry .AND.  constant_top_scalarflux )                         &
           WRITE ( io, 302 ) top_scalarflux                                          !bK added this block check 302 ok????
 
     ENDIF
@@ -1149,7 +1152,7 @@
        IF ( passive_scalar  .AND.  .NOT. constant_scalarflux )  THEN
           WRITE ( io, 314 )
        ENDIF
-       IF ( chemistry  .AND.  .NOT. constant_scalarflux )  THEN                     !bK added this if block, check 314 ok ??? 
+       IF ( air_chemistry  .AND.  .NOT. constant_scalarflux )  THEN                     !bK added this if block, check 314 ok ??? 
           WRITE ( io, 314 )
        ENDIF
     ELSE
@@ -1293,7 +1296,7 @@
 !-- Initial chemistry profile
 !-- Building output strings, starting with surface humidity
 !--                                                                                  !bK added this if block
-    IF ( chemistry )  THEN
+    IF ( air_chemistry )  THEN
        WRITE ( temperatures, '(E8.1)' )  rs_surface
        gradients = '--------'
        slices = '       0'
@@ -1898,7 +1901,7 @@
     IF ( passive_scalar  .AND.  q_surface_initial_change /= 0.0_wp )  THEN
        WRITE ( io, 477 )  q_surface_initial_change       
     ENDIF
-    IF ( chemistry  .AND.  q_surface_initial_change /= 0.0_wp )  THEN               !bK added if block check 477 ok ????
+    IF ( air_chemistry  .AND.  q_surface_initial_change /= 0.0_wp )  THEN               !bK added if block check 477 ok ????
        WRITE ( io, 477 )  q_surface_initial_change       
     ENDIF
 

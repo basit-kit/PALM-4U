@@ -14,7 +14,7 @@
 ! You should have received a copy of the GNU General Public License along with
 ! PALM. If not, see <http://www.gnu.org/licenses/>.
 !
-! Copyright 1997-2016 Leibniz Universitaet Hannover
+! Copyright 1997-2017 Leibniz Universitaet Hannover
 !------------------------------------------------------------------------------!
 !
 ! Current revisions:
@@ -23,8 +23,13 @@
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: boundary_conds.f90 2001 2016-08-20 18:41:22Z knoop $
+! $Id: boundary_conds.f90 2425 2017-09-11 14:21:39Z basit $
 !
+! 2382 2017-09-01 12:20:53Z basit
+! renamed kchem_driver to chemistry_model_mod, use_kpp_chemistry to
+! air_chemistry. prefix 'k' is removed from kchem_boundary_conds, and
+! prep directive 'KPP_CHEM' renamed as '__chem'. 
+! 
 ! 2000 2016-08-20 18:09:15Z knoop
 ! Forced header and separation lines into 80 columns
 ! 
@@ -150,8 +155,8 @@
                w, w_p, w_m_l, w_m_n, w_m_r, w_m_s, pt_init
 
     USE control_parameters,                                                    &
-        ONLY:  bc_pt_t_val, bc_q_t_val, bc_s_t_val, chemistry, constant_diffusion, & ! bK added chemistry
-               cloud_physics, dt_3d, humidity,                                 &
+        ONLY:  air_chemistry, bc_pt_t_val, bc_q_t_val, bc_s_t_val,             &
+               constant_diffusion,  cloud_physics, dt_3d, humidity,            & ! bK added chemistry
                ibc_pt_b, ibc_pt_t, ibc_q_b, ibc_q_t, ibc_s_b, ibc_s_t,         &
                ibc_sa_t, ibc_uv_b, ibc_uv_t, inflow_l, inflow_n, inflow_r,     &
                inflow_s, intermediate_timestep_count, large_scale_forcing,     &
@@ -166,9 +171,9 @@
         ONLY:  nx, nxl, nxlg, nxr, nxrg, ny, nyn, nyng, nys, nysg,             &
                nzb, nzb_s_inner, nzb_w_inner, nzt
 
-#ifdef KPP_CHEM
-    USE kchem_driver,                                                          &
-        ONLY: kchem_boundary_conds
+#if defined( __chem )
+    USE chemistry_model_mod,                                                   &
+        ONLY: chem_boundary_conds 
 #endif
 
     USE kinds
@@ -250,12 +255,12 @@
           DO  j = nysg, nyng
 
 !                IF (myid == 2) print*, ' pe_id is',myid,'  and  the val is BEFORE', nzb_s_inner(j,i)                ! bK
-                flush(9)                                                                                            ! bK
+!                flush(9)                                                                                            ! bK
 
                  pt_p(nzb_s_inner(j,i),j,i) = pt_p(nzb_s_inner(j,i)+1,j,i)                                              
 
 !                IF (myid == 2) print*, ' pe_id is',myid,'  and pt_p val is AFTER',  pt_p(nzb_s_inner(j,i),j,i)     ! bK
-                flush(9)                                                                                           ! bK
+!                flush(9)                                                                                           ! bK
 
           ENDDO
        ENDDO
@@ -403,10 +408,10 @@
     
 !
 !-- Top/bottom boundary conditions for chemical species
-#ifdef KPP_CHEM
-!    print*,'fm boundary_conds BEFORE kchem_boundary_conds call ', chemistry     !bK
-    IF ( chemistry )  CALL kchem_boundary_conds( 'set_bc_bottomtop' )  !bK
-    if(myid == 0) print*,'fm boundary_conds, after calling kchem_boundary_conds for bottomtop #3.2 '                !bK debug
+#if defined( __chem )
+!    print*,'fm boundary_conds BEFORE chem_boundary_conds call ', air_chemistry     !bK
+    IF ( air_chemistry )  CALL chem_boundary_conds( 'set_bc_bottomtop' )  !bK
+!    if(myid == 0) print*,'fm boundary_conds, after calling chem_boundary_conds for bottomtop #3.2 '                !bK debug
 
 #endif
 !
@@ -491,9 +496,9 @@
 
 !
 !-- Top/bottom boundary conditions for chemical species
-#ifdef KPP_CHEM
-    IF ( chemistry )  CALL kchem_boundary_conds( 'set_bc_lateral' )    !bK 
-!    if(myid == 0) write(9,*) 'fm bounary_conds after calling kchem_boundary_conds(lateral) '    !bK debug
+#if defined( __chem )
+    IF ( air_chemistry )  CALL chem_boundary_conds( 'set_bc_lateral' )    !bK 
+!    if(myid == 0) write(9,*) 'fm bounary_conds after calling chem_boundary_conds(lateral) '    !bK debug
 #endif
 
 

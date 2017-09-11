@@ -59,6 +59,12 @@ void fortran_file::read () {
        global_substitute(line,"e+ ","e+");
        global_substitute(line,"E+ ","E+");
        global_substitute(line,"E- ","E-");
+       global_substitute(line," NSPEC "," nspec ");            //bK added formatting for palm
+	   global_substitute(line," NVAR "," nvar ");            //bK added formatting for palm
+       global_substitute(line,"(NVAR ","(nvar ");            //bK added formatting for palm
+       global_substitute(line,",NVAR ","(nvar ");            //bK added formatting for palm
+//       global_substitute(line,"PUBLIC :: NVAR","PUBLIC :: nvar");
+
      }
 
      pl.set_line(line);
@@ -103,10 +109,23 @@ void fortran_file::edit_fortran () {
       lo_line.insert(0,"!DELETE ");
     }
 
-//  Update_RCONST has only to be called once per outer timeloop in mecca_chem. 
-    if(ip->get_token(0) == "CALL" && ip->get_token(1) == "Update_RCONST()" ) {
+//  Update_RCONST has only to be called once per outer timeloop in KPP_FOR_PALM
+//  RFo: Originally this was "Update_RCONST()", but due to extra blanks added by kp4 this was not recognized any more
+
+    if(ip->get_token(0) == "CALL" && ip->get_token(1) == "Update_RCONST" ) {
+    cout << "Hier CALL    " << lo_line << endl;
       lo_line.insert(0,"!DELETE ");
+    cout << lo_line << endl;
     }
+
+//  Update_SUN must not be called within in KPP_FOR_PALM
+
+    if(ip->get_token(0) == "CALL" && ip->get_token(1) == "Update_SUN" ) {
+    cout << "Hier CALL    " << lo_line << endl;
+      lo_line.insert(0,"!DELETE ");
+    cout << lo_line << endl;
+    }
+
 
     ip->set_line(lo_line);
 
@@ -391,6 +410,7 @@ void fortran_file::vector_variable_list(vector <Vvar> &var_list) {
        to_do = false;
     }
     if(ip->get_token(0).substr(0,1) != "!" && ip->get_token_number_from_string("TEMP") > 2) {
+//  if(ip->get_token(0).substr(0,1) != "!" && ip->get_token_number_from_string("XXXX") > 2) {
       todo_1 = true;
     }
     if(to_do || todo_1) {

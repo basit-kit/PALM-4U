@@ -14,7 +14,7 @@
 ! You should have received a copy of the GNU General Public License along with
 ! PALM. If not, see <http://www.gnu.org/licenses/>.
 !
-! Copyright 1997-2016 Leibniz Universitaet Hannover
+! Copyright 1997-2017 Leibniz Universitaet Hannover
 !------------------------------------------------------------------------------!
 !
 ! Current revisions:
@@ -23,7 +23,7 @@
 ! 
 ! Former revisions:
 ! -----------------
-! $Id: data_output_profiles.f90 2027 2016-10-18 10:28:05Z suehring $
+! $Id: data_output_profiles.f90 2425 2017-09-11 14:21:39Z basit $
 !
 ! 2026 2016-10-18 10:27:02Z suehring
 ! Formatting adjustment
